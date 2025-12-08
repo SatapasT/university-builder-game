@@ -19,9 +19,11 @@ namespace DefaultNamespace
             if (Physics.Raycast(playerRay, out RaycastHit hit, interactableRange))
             {
                 currentTargetedInteractable = hit.collider.GetComponent<IInteractable>();
+                currentTargetedInteractable.OnFocus();
             }
             else
             {
+                currentTargetedInteractable.OnLoseFocus();
                 currentTargetedInteractable = null;
             }
 
