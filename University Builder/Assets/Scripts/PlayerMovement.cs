@@ -23,8 +23,8 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        Debug.Log("IsGrounded? " + groundCheck.isGrounded);
         if (Keyboard.current == null) return;
+
         if (groundCheck == null) return;
 
         Vector3 moveDir = Vector3.zero;
