@@ -23,6 +23,7 @@ namespace DefaultNamespace
             }
             else
             {
+                if (currentTargetedInteractable == null) return;
                 currentTargetedInteractable.OnLoseFocus();
                 currentTargetedInteractable = null;
             }
