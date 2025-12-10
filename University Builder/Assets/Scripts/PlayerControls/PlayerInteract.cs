@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,30 +8,37 @@ namespace DefaultNamespace
         [SerializeField] private Camera playerCamera;
         [SerializeField] private float interactableRange = 3f;
 
-        private IInteractable currentTargetedInteractable;
+        private IInteractable currentTarget = null;
 
         void Update()
         {
             if (Keyboard.current == null) return;
-            Ray playerRay = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
-            if (Physics.Raycast(playerRay, out RaycastHit hit, interactableRange))
+            Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+
+            IInteractable newTarget = null;
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, interactableRange))
             {
-                currentTargetedInteractable = hit.collider.GetComponent<IInteractable>();
-                currentTargetedInteractable.OnFocus();
-            }
-            else
-            {
-                if (currentTargetedInteractable == null) return;
-                currentTargetedInteractable.OnLoseFocus();
-                currentTargetedInteractable = null;
+                newTarget = hit.collider.GetComponentInParent<IInteractable>();
             }
 
-            if (currentTargetedInteractable != null &&
-                Keyboard.current.fKey.wasPressedThisFrame)
+            if (newTarget != currentTarget)
             {
-                Debug.Log($"Interacting with {hit.collider.name}");
-                currentTargetedInteractable.Interact();
+                if (currentTarget != null)
+                    currentTarget.OnLoseFocus();
+
+                if (newTarget != null)
+                    newTarget.OnFocus();
+
+                currentTarget = newTarget;
+            }
+
+            if (currentTarget != null && Keyboard.current.fKey.wasPressedThisFrame)
+            {
+                Debug.Log($"Interacting with {((MonoBehaviour)currentTarget).name}");
+                currentTarget.Interact();
             }
         }
     }

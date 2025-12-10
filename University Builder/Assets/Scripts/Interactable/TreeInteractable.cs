@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Oak_Tree : MonoBehaviour, IInteractable
+public class TreeInteractable : MonoBehaviour, IInteractable
 {
     private Renderer rend;
     private Color defaultColor;

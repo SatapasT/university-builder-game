@@ -1,32 +1,59 @@
 ﻿using UnityEngine;
 
-public class TreeSpawner : MonoBehaviour
+public class SpawnEnvironment : MonoBehaviour
 {
-    [SerializeField] private GameObject treePrefab;
-    [SerializeField] public int treeCount = 100;
+    [System.Serializable]
+    public class SpawnConfig
+    {
+        public string name;
+        public GameObject prefab;
+        public int count = 100;
+    }
+
+    [Header("Things to spawn")]
+    [SerializeField] private SpawnConfig[] spawnConfigs;
 
     [Header("Terrain area")]
-    [SerializeField] private Terrain terrain;         
+    [SerializeField] private Terrain terrain;
 
     [Header("No-spawn zone")]
     [SerializeField] private Transform forbiddenCenter;
     [SerializeField] private float forbiddenRadius = 20f;
 
-    void Start()
+    private TerrainData terrainData;
+    private Vector3 terrainOrigin;
+
+    private void Start()
     {
-
-        TerrainData data = terrain.terrainData;
-        Vector3 terrainPos = terrain.transform.position;
-
-        for (int i = 0; i < treeCount; i++)
+        if (terrain == null)
         {
-            float randX = Random.Range(0f, data.size.x);
-            float randZ = Random.Range(0f, data.size.z);
+            Debug.LogError("SpawnEnvironment: Terrain reference is missing!");
+            return;
+        }
+
+        terrainData = terrain.terrainData;
+        terrainOrigin = terrain.transform.position;
+
+        foreach (var config in spawnConfigs)
+        {
+            if (config.prefab == null || config.count <= 0)
+                continue;
+
+            SpawnObjects(config);
+        }
+    }
+
+    private void SpawnObjects(SpawnConfig config)
+    {
+        for (int i = 0; i < config.count; i++)
+        {
+            float randX = Random.Range(0f, terrainData.size.x);
+            float randZ = Random.Range(0f, terrainData.size.z);
 
             Vector3 worldPos = new Vector3(
-                terrainPos.x + randX,
+                terrainOrigin.x + randX,
                 0f,
-                terrainPos.z + randZ
+                terrainOrigin.z + randZ
             );
 
             if (forbiddenCenter != null)
@@ -38,15 +65,15 @@ public class TreeSpawner : MonoBehaviour
 
                 if (dist < forbiddenRadius)
                 {
-                    i--;
+                    i--;   
                     continue;
                 }
             }
 
-            float y = terrain.SampleHeight(worldPos) + terrainPos.y;
+            float y = terrain.SampleHeight(worldPos) + terrainOrigin.y;
             worldPos.y = y;
 
-            Instantiate(treePrefab, worldPos, Quaternion.identity, transform);
+            Instantiate(config.prefab, worldPos, Quaternion.identity, transform);
         }
     }
 }

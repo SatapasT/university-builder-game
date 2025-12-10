@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class TreeLOD : MonoBehaviour
+public class RenderRange : MonoBehaviour
 {
     public Transform player;
     public float hideDistance = 150f;
