@@ -5,8 +5,7 @@ public class Workbench : MonoBehaviour, IInteractable
     private Renderer rend;
     private Color defaultColor;
 
-    [SerializeField] 
-    private WorkshopUI workshopUI;
+    [SerializeField] private WorkshopUI workshopUI;
 
     void Awake()
     {
@@ -16,7 +15,11 @@ public class Workbench : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        workshopUI.OpenMenu();
+        Debug.Log("Workbench Interact");
+        if (workshopUI != null)
+        {
+            workshopUI.ToggleMenu();
+        }
     }
 
     public void OnFocus()
