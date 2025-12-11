@@ -174,24 +174,20 @@ public class SelectedBuildTracker : MonoBehaviour
 
         StringBuilder displayTextBuilder = new StringBuilder();
 
-        // Title
         displayTextBuilder.AppendLine($"<b><color=yellow>{buildInfo.Nickname}</color></b>");
 
-        // Description
         if (!string.IsNullOrWhiteSpace(buildInfo.Info))
         {
             displayTextBuilder.AppendLine();
             displayTextBuilder.AppendLine(buildInfo.Info);
         }
 
-        // Player resources (for current/required display)
         Dictionary<ResourceType, int> playerResources = null;
         if (ResourcesManager.Instance != null)
         {
             playerResources = ResourcesManager.Instance.GetAllResources();
         }
 
-        // Costs
         displayTextBuilder.AppendLine();
         displayTextBuilder.AppendLine("<b><color=orange>Costs</color></b>");
 

@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 public class CameraMovement : MonoBehaviour
 {
-    public float sensitivity = 20f;
+    public float sensitivity = 5f;
 
     public Transform orientation;
 
@@ -18,6 +18,9 @@ public class CameraMovement : MonoBehaviour
 
     void Update()
     {
+        if (UIManager.AnyMenuOpen)
+            return;
+
         if (Mouse.current == null) {
             return;
         }

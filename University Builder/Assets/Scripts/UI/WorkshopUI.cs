@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class WorkshopUI : MonoBehaviour
 {
+    public static WorkshopUI Instance { get; private set; }
+
     [SerializeField] private List<GameObject> AllWorkshopPanels = new();
     [SerializeField] private List<GameObject> MainWorkshopPanels = new();
 
@@ -13,8 +15,17 @@ public class WorkshopUI : MonoBehaviour
 
     public bool IsOpen { get; private set; }
 
+
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+
         foreach (GameObject panel in AllWorkshopPanels)
         {
             if (panel != null)
@@ -24,6 +35,7 @@ public class WorkshopUI : MonoBehaviour
         IsOpen = false;
     }
 
+
     public void ToggleMenu()
     {
         if (IsOpen) CloseMenu();
@@ -32,6 +44,7 @@ public class WorkshopUI : MonoBehaviour
 
     public void OpenMenu()
     {
+        UIManager.Instance.SetMenuState(true);
         foreach (GameObject panel in MainWorkshopPanels)
         {
             if (panel != null)
@@ -46,6 +59,7 @@ public class WorkshopUI : MonoBehaviour
 
     public void CloseMenu()
     {
+        UIManager.Instance.SetMenuState(false);
         foreach (GameObject panel in AllWorkshopPanels)
         {
             if (panel != null)

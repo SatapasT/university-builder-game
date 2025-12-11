@@ -23,6 +23,9 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        if (UIManager.AnyMenuOpen)
+            return;
+
         if (Keyboard.current == null) return;
 
         if (groundCheck == null) return;
@@ -52,7 +55,7 @@ public class PlayerMovement : MonoBehaviour
         if (moveDir.sqrMagnitude > 1f)
             moveDir.Normalize();
 
-        moveDir *= movementSpeed;
+        moveDir *= movementSpeed * PlayerStats.Instance.GetMoveSpeedMultiplier();
 
         Vector3 velocity = rigidbody.linearVelocity;
         velocity.x = moveDir.x;

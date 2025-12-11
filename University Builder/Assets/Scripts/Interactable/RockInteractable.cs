@@ -15,8 +15,9 @@ public class  RockInteractable : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        ResourcesManager.Instance.AddResource(ResourceType.Stone, 1);
-        harvestAbleAmount -= 1;
+        int playerHarvestAmount = PlayerStats.Instance.GetStoneHarvestAmount();
+        ResourcesManager.Instance.AddResource(ResourceType.Stone, playerHarvestAmount);
+        harvestAbleAmount -= playerHarvestAmount;
         if (harvestAbleAmount <= 0)
         {
             Destroy(gameObject);

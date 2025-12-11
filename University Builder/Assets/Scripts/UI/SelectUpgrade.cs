@@ -15,6 +15,7 @@ public class ToolSelectUpgrade : MonoBehaviour
 
     public bool HasSelection => CurrentTool != ToolType.None;
 
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -36,61 +37,7 @@ public class ToolSelectUpgrade : MonoBehaviour
     public void SelectPickaxe() => SelectTool(ToolType.Pickaxe);
     public void SelectBoots() => SelectTool(ToolType.Boots);
 
-    // --------- PUBLIC COST / UPGRADE HELPERS ---------
-
-    public bool CanAffordSelectedUpgrade()
-    {
-        if (!HasSelection)
-            return false;
-
-        if (ToolManager.Instance == null || ResourcesManager.Instance == null)
-            return false;
-
-        ToolInfo next = ToolManager.Instance.GetNextUpgrade(CurrentTool);
-        if (next == null) // max level
-            return false;
-
-        Dictionary<ResourceType, int> playerResources =
-            ResourcesManager.Instance.GetAllResources();
-
-        foreach (ResourceAmount cost in next.UpgradeCosts)
-        {
-            if (!playerResources.TryGetValue(cost.type, out int current) ||
-                current < cost.amount)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public bool TryApplyUpgrade()
-    {
-        if (!CanAffordSelectedUpgrade())
-            return false;
-
-        ToolInfo next = ToolManager.Instance.GetNextUpgrade(CurrentTool);
-        if (next == null)
-            return false;
-
-        // Deduct resources
-        Dictionary<ResourceType, int> playerResources =
-            ResourcesManager.Instance.GetAllResources();
-
-        foreach (ResourceAmount cost in next.UpgradeCosts)
-        {
-            ResourcesManager.Instance.DeductResources(cost.type, cost.amount);
-        }
-
-        bool success = ToolManager.Instance.UpgradeTool(CurrentTool);
-
-        SelectTool(CurrentTool);
-
-        return success;
-    }
-
-    // --------- SELECTION + UI TEXT ---------
+    // --------- SELECTION + INFO DISPLAY ---------
 
     private void SelectTool(ToolType toolType)
     {
@@ -99,16 +46,16 @@ public class ToolSelectUpgrade : MonoBehaviour
         if (toolInfoText == null)
             return;
 
-        if (ToolManager.Instance == null)
+        if (PlayerStats.Instance == null)
         {
-            Debug.LogError("ToolManager.Instance is null – add a ToolManager GameObject to the scene.");
+            Debug.LogError("PlayerStats.Instance is null – attach PlayerStats to the Player.");
             return;
         }
 
-        int level = ToolManager.Instance.GetCurrentLevel(toolType);
+        int level = PlayerStats.Instance.GetToolLevel(toolType);
 
         ToolInfo current = ToolsDatabase.Get(toolType, level);
-        ToolInfo next = ToolManager.Instance.GetNextUpgrade(toolType); // may be null at max level
+        ToolInfo next = PlayerStats.Instance.GetNextUpgrade(toolType); // may be null
 
         if (current == null)
             return;
@@ -118,7 +65,7 @@ public class ToolSelectUpgrade : MonoBehaviour
 
         // ---------- TITLE ----------
         if (next != null)
-            builder.AppendLine($"<b><color=yellow>{next.Name}</color></b>");   // show NEXT upgrade name
+            builder.AppendLine($"<b><color=yellow>{next.Name}</color></b>");
         else
             builder.AppendLine($"<b><color=yellow>{current.Name} (Max Level)</color></b>");
 
@@ -136,7 +83,7 @@ public class ToolSelectUpgrade : MonoBehaviour
             builder.AppendLine();
         }
 
-        // ---------- STATS ----------
+        // ---------- STATS (current -> next) ----------
         builder.AppendLine("<b><color=orange>Stats</color></b>");
 
         int currentHarvest = current.HarvestAmount;
@@ -188,6 +135,78 @@ public class ToolSelectUpgrade : MonoBehaviour
         }
 
         toolInfoText.text = builder.ToString();
+
+        // Refresh confirm button immediately
+        if (WorkshopUI.Instance != null)
+        {
+            WorkshopUI.Instance.RenderConfirmButton();
+        }
+    }
+
+    // --------- CONFIRM BUTTON HELPERS ---------
+
+    public bool CanAffordSelectedUpgrade()
+    {
+        if (!HasSelection ||
+            PlayerStats.Instance == null ||
+            ResourcesManager.Instance == null)
+            return false;
+
+        ToolInfo next = PlayerStats.Instance.GetNextUpgrade(CurrentTool);
+        if (next == null)
+            return false; // max level
+
+        Dictionary<ResourceType, int> playerResources =
+            ResourcesManager.Instance.GetAllResources();
+
+        foreach (ResourceAmount cost in next.UpgradeCosts)
+        {
+            if (!playerResources.TryGetValue(cost.type, out int have) ||
+                have < cost.amount)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public bool TryApplyUpgrade()
+    {
+        if (!HasSelection ||
+            PlayerStats.Instance == null ||
+            ResourcesManager.Instance == null)
+            return false;
+
+        ToolInfo next = PlayerStats.Instance.GetNextUpgrade(CurrentTool);
+        if (next == null)
+            return false; // max level
+
+        Dictionary<ResourceType, int> playerResources =
+            ResourcesManager.Instance.GetAllResources();
+
+        // Check again (defensive)
+        foreach (ResourceAmount cost in next.UpgradeCosts)
+        {
+            if (!playerResources.TryGetValue(cost.type, out int have) ||
+                have < cost.amount)
+            {
+                return false;
+            }
+        }
+
+        // Deduct cost
+        foreach (ResourceAmount cost in next.UpgradeCosts)
+        {
+            ResourcesManager.Instance.DeductResources(cost.type, cost.amount);
+        }
+
+        // Bump level on the player
+        PlayerStats.Instance.UpgradeToolLevel(CurrentTool);
+
+        // Refresh info + confirm button
+        SelectTool(CurrentTool);
+        return true;
     }
 
     public void ClearSelection()

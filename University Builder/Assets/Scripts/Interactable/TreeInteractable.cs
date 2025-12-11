@@ -15,8 +15,9 @@ public class TreeInteractable : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        ResourcesManager.Instance.AddResource(ResourceType.Wood, 1);
-        harvestAbleAmount -= 1;
+        int playerHarvestAmount = PlayerStats.Instance.GetWoodHarvestAmount();
+        ResourcesManager.Instance.AddResource(ResourceType.Wood, playerHarvestAmount);
+        harvestAbleAmount -= playerHarvestAmount;
         if (harvestAbleAmount <= 0)
         {
             Destroy(gameObject);
