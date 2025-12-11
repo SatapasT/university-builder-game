@@ -4,8 +4,6 @@ using UnityEngine.UI;
 
 public class WorkshopUI : MonoBehaviour
 {
-    public static SelectedBuildTracker Instance { get; private set; }
-
     [SerializeField] private List<GameObject> AllWorkshopPanels = new();
     [SerializeField] private List<GameObject> MainWorkshopPanels = new();
 
@@ -13,28 +11,18 @@ public class WorkshopUI : MonoBehaviour
     [SerializeField] private GameObject UpgradeToolMenu;
     [SerializeField] private GameObject ConfirmButton;
 
-    [SerializeField] private GameObject CastleObject;
-
-    [SerializeField] private GameObject BuilderPrefab;
-    [SerializeField] private Transform BuilderSpawnPoint;
-
-
     public bool IsOpen { get; private set; }
 
     private void Awake()
     {
-        foreach (var panel in AllWorkshopPanels)
+        foreach (GameObject panel in AllWorkshopPanels)
         {
             if (panel != null)
                 panel.SetActive(false);
         }
 
-        if (CastleObject != null)
-            CastleObject.SetActive(false);
-
         IsOpen = false;
     }
-
 
     public void ToggleMenu()
     {
@@ -44,7 +32,7 @@ public class WorkshopUI : MonoBehaviour
 
     public void OpenMenu()
     {
-        foreach (var panel in MainWorkshopPanels)
+        foreach (GameObject panel in MainWorkshopPanels)
         {
             if (panel != null)
                 panel.SetActive(true);
@@ -58,7 +46,7 @@ public class WorkshopUI : MonoBehaviour
 
     public void CloseMenu()
     {
-        foreach (var panel in AllWorkshopPanels)
+        foreach (GameObject panel in AllWorkshopPanels)
         {
             if (panel != null)
                 panel.SetActive(false);
@@ -69,34 +57,14 @@ public class WorkshopUI : MonoBehaviour
 
         IsOpen = false;
     }
-
-    private bool HasEnoughResources(BuildInfo buildInfo, Dictionary<ResourceType, int> playerResources)
-    {
-        if (buildInfo == null || playerResources == null)
-            return false;
-        foreach (var cost in buildInfo.Costs)
-        {
-            if (!playerResources.ContainsKey(cost.type) || playerResources[cost.type] < cost.amount)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
     public void RenderConfirmButton()
     {
         if (ConfirmButton == null)
             return;
 
-        Dictionary<ResourceType, int> playerResources = null;
-        if (ResourcesManager.Instance != null)
-        {
-            playerResources = ResourcesManager.Instance.GetAllResources();
-        }
-
-        BuildInfo buildInfo = BuildDatabase.Get(SelectedBuildTracker.Instance.CurrentBuild);
-
-        if (buildInfo == null || playerResources == null)
+        if (SelectedBuildTracker.Instance == null ||
+            !SelectedBuildTracker.Instance.HasSelection ||
+            ResourcesManager.Instance == null)
         {
             ConfirmButton.SetActive(false);
             return;
@@ -108,58 +76,16 @@ public class WorkshopUI : MonoBehaviour
         if (buttonImage == null)
             return;
 
-        bool hasEnoughResources = HasEnoughResources(buildInfo, playerResources);
-
-        if (hasEnoughResources)
-        {
-            buttonImage.color = Color.green;
-        }
-        else
-        {
-            buttonImage.color = Color.gray;
-        }
+        bool canAfford = SelectedBuildTracker.Instance.CanAffordCurrentBuild();
+        buttonImage.color = canAfford ? Color.green : Color.gray;
     }
 
     public void ClickConfirmButton()
     {
-        if (ResourcesManager.Instance != null)
-            startConstruction();
-
-
-    }
-
-    public void startConstruction()
-    {
-        BuildType selected = SelectedBuildTracker.Instance.CurrentBuild;
-        BuildInfo buildInfo = BuildDatabase.Get(selected);
-        Dictionary<ResourceType, int> playerResources = ResourcesManager.Instance.GetAllResources();
-
-        if (!HasEnoughResources(buildInfo, playerResources))
+        if (SelectedBuildTracker.Instance == null)
             return;
 
-        foreach (var cost in buildInfo.Costs)
-            ResourcesManager.Instance.DeductResources(cost.type, cost.amount);
-
-        if (selected != BuildType.Castle)
-            return;
-
-        if (CastleObject == null)
-            return;
-
-        CastleObject.SetActive(true);
-
-        BuildingConstruction buildingConstruction =
-            CastleObject.GetComponent<BuildingConstruction>();
-
-        buildingConstruction.StartConstruction();
-
-        GameObject builderInstance = Instantiate(
-            BuilderPrefab,
-            BuilderSpawnPoint.position,
-            BuilderSpawnPoint.rotation);
-
-        BuilderAgent builderAgent = builderInstance.GetComponent<BuilderAgent>();
-        builderAgent.Initialize(CastleObject.transform, buildingConstruction);
+        SelectedBuildTracker.Instance.TryStartConstruction();
     }
 
     public void HideConfirmButton()
