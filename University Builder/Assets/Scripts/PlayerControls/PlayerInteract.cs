@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 namespace DefaultNamespace
 {
-    public class InteractWorkshop : MonoBehaviour
+    public class PlayerInteract : MonoBehaviour
     {
         [SerializeField] private Camera playerCamera;
         [SerializeField] private float interactableRange = 3f;
@@ -13,6 +13,11 @@ namespace DefaultNamespace
         void Update()
         {
             if (Keyboard.current == null) return;
+
+            if (currentTarget is MonoBehaviour mb && mb == null)
+            {
+                currentTarget = null;
+            }
 
             Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
@@ -26,8 +31,10 @@ namespace DefaultNamespace
 
             if (newTarget != currentTarget)
             {
-                if (currentTarget != null)
+                if (currentTarget is MonoBehaviour mb2 && mb2 != null)
+                {
                     currentTarget.OnLoseFocus();
+                }
 
                 if (newTarget != null)
                     newTarget.OnFocus();

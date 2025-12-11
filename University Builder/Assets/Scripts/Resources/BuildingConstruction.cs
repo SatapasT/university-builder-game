@@ -22,9 +22,6 @@ public class BuildingConstruction : MonoBehaviour
             originalMaterial = meshRenderer.material;
             originalColor = originalMaterial.color;
         }
-
-        // IMPORTANT: do NOT SetActive(false) here anymore.
-        // WorkshopUI will hide/show the castle.
     }
 
     public void StartConstruction()
@@ -40,7 +37,6 @@ public class BuildingConstruction : MonoBehaviour
 
     private IEnumerator BuildRoutine()
     {
-        // Construction look (blue + transparent)
         if (meshRenderer != null)
         {
             Color buildColor = new Color(0.2f, 0.4f, 1f, 0.4f);

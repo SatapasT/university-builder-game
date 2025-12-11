@@ -10,6 +10,7 @@ public class WorkshopUI : MonoBehaviour
     [SerializeField] private List<GameObject> MainWorkshopPanels = new();
 
     [SerializeField] private GameObject BuildMenu;
+    [SerializeField] private GameObject UpgradeToolMenu;
     [SerializeField] private GameObject ConfirmButton;
 
     [SerializeField] private GameObject CastleObject;
@@ -121,48 +122,36 @@ public class WorkshopUI : MonoBehaviour
 
     public void ClickConfirmButton()
     {
-        // --- Validate managers ---
-        if (ResourcesManager.Instance == null)
-            return;
+        if (ResourcesManager.Instance != null)
+            startConstruction();
 
+
+    }
+
+    public void startConstruction()
+    {
         BuildType selected = SelectedBuildTracker.Instance.CurrentBuild;
         BuildInfo buildInfo = BuildDatabase.Get(selected);
         Dictionary<ResourceType, int> playerResources = ResourcesManager.Instance.GetAllResources();
 
-        // --- Validate build info & resources ---
         if (!HasEnoughResources(buildInfo, playerResources))
             return;
 
-        // --- Deduct resources ---
         foreach (var cost in buildInfo.Costs)
             ResourcesManager.Instance.DeductResources(cost.type, cost.amount);
 
-        // --- Ensure this build type is Castle ---
         if (selected != BuildType.Castle)
             return;
 
         if (CastleObject == null)
             return;
 
-        // --- Start construction ---
         CastleObject.SetActive(true);
 
         BuildingConstruction buildingConstruction =
             CastleObject.GetComponent<BuildingConstruction>();
 
-        if (buildingConstruction == null)
-        {
-            Debug.LogError("BuildingConstruction component not found on CastleObject");
-            return;
-        }
-
         buildingConstruction.StartConstruction();
-
-        if (BuilderPrefab == null || BuilderSpawnPoint == null)
-        {
-            Debug.LogError("BuilderPrefab or BuilderSpawnPoint not assigned on WorkshopUI");
-            return;
-        }
 
         GameObject builderInstance = Instantiate(
             BuilderPrefab,
@@ -170,17 +159,8 @@ public class WorkshopUI : MonoBehaviour
             BuilderSpawnPoint.rotation);
 
         BuilderAgent builderAgent = builderInstance.GetComponent<BuilderAgent>();
-
-        if (builderAgent == null)
-        {
-            Debug.LogError("BuilderAgent component missing on BuilderPrefab");
-            return;
-        }
-
         builderAgent.Initialize(CastleObject.transform, buildingConstruction);
     }
-
-
 
     public void HideConfirmButton()
     {
@@ -195,5 +175,15 @@ public class WorkshopUI : MonoBehaviour
     public void CloseBuildMenu()
     {
         BuildMenu.SetActive(false);
+    }
+
+    public void OpenUpgradeToolMenu()
+    {
+        UpgradeToolMenu.SetActive(true);
+    }
+
+    public void CloseUpgradeToolMenu()
+    {
+        UpgradeToolMenu.SetActive(false);
     }
 }

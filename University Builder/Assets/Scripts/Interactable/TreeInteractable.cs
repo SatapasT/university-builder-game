@@ -5,6 +5,8 @@ public class TreeInteractable : MonoBehaviour, IInteractable
     private Renderer rend;
     private Color defaultColor;
 
+    public int harvestAbleAmount = 30;
+
     void Awake()
     {
         rend = GetComponent<Renderer>();
@@ -14,6 +16,11 @@ public class TreeInteractable : MonoBehaviour, IInteractable
     public void Interact()
     {
         ResourcesManager.Instance.AddResource(ResourceType.Wood, 1);
+        harvestAbleAmount -= 1;
+        if (harvestAbleAmount <= 0)
+        {
+            Destroy(gameObject);
+        }
     }
 
     public void OnFocus()
