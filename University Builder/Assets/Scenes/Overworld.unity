@@ -236,7 +236,6 @@ GameObject:
   - component: {fileID: 12522435}
   - component: {fileID: 12522434}
   - component: {fileID: 12522433}
-  - component: {fileID: 12522432}
   m_Layer: 5
   m_Name: Upgrade Pickaxe Button
   m_TagString: Untagged
@@ -264,19 +263,6 @@ RectTransform:
   m_AnchoredPosition: {x: 8.2, y: -0}
   m_SizeDelta: {x: 207.4, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &12522432
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 12522430}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b1183dd57ed17a6459057addf3ec6d1c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BuildSelectButton
-  buildType: 1
 --- !u!114 &12522433
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -321,9 +307,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 12522432}
-        m_TargetAssemblyTypeName: BuildSelectButton, Assembly-CSharp
-        m_MethodName: OnClickSelect
+      - m_Target: {fileID: 1543107008}
+        m_TargetAssemblyTypeName: WorkshopUI, Assembly-CSharp
+        m_MethodName: RenderConfirmButton
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -333,9 +319,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1543107008}
-        m_TargetAssemblyTypeName: WorkshopUI, Assembly-CSharp
-        m_MethodName: RenderConfirmButton
+      - m_Target: {fileID: 269007593}
+        m_TargetAssemblyTypeName: ToolSelectUpgrade, Assembly-CSharp
+        m_MethodName: SelectPickaxe
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -802,6 +788,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 269007592}
+  - component: {fileID: 269007593}
   m_Layer: 5
   m_Name: Upgrade Tool Button Container
   m_TagString: Untagged
@@ -831,6 +818,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &269007593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 269007591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5695588bb2b0de408fa469ad8809e57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ToolSelectUpgrade
+  toolInfoTextObject: {fileID: 1332145655}
 --- !u!1 &294561040 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9010612053373108687, guid: 0c13b9c31fd059b468b2f1759c412e61, type: 3}
@@ -1642,7 +1642,6 @@ GameObject:
   - component: {fileID: 484845515}
   - component: {fileID: 484845514}
   - component: {fileID: 484845513}
-  - component: {fileID: 484845512}
   m_Layer: 5
   m_Name: Upgrade Boot Button
   m_TagString: Untagged
@@ -1670,19 +1669,6 @@ RectTransform:
   m_AnchoredPosition: {x: 8.2, y: -66.9}
   m_SizeDelta: {x: 179.8, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &484845512
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 484845510}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b1183dd57ed17a6459057addf3ec6d1c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BuildSelectButton
-  buildType: 1
 --- !u!114 &484845513
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1727,9 +1713,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 484845512}
-        m_TargetAssemblyTypeName: BuildSelectButton, Assembly-CSharp
-        m_MethodName: OnClickSelect
+      - m_Target: {fileID: 1543107008}
+        m_TargetAssemblyTypeName: WorkshopUI, Assembly-CSharp
+        m_MethodName: RenderConfirmButton
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1739,9 +1725,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1543107008}
-        m_TargetAssemblyTypeName: WorkshopUI, Assembly-CSharp
-        m_MethodName: RenderConfirmButton
+      - m_Target: {fileID: 269007593}
+        m_TargetAssemblyTypeName: ToolSelectUpgrade, Assembly-CSharp
+        m_MethodName: SelectBoots
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1789,6 +1775,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 484845510}
   m_CullTransparentMesh: 1
+--- !u!1 &486866906
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 486866907}
+  - component: {fileID: 486866908}
+  m_Layer: 0
+  m_Name: ToolManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &486866907
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 486866906}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -15.172578, y: -253.02263, z: 407.18872}
+  m_LocalScale: {x: 0.6887645, y: 0.6887645, z: 0.6887645}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1543107007}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &486866908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 486866906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87f9453b6a4803c42b7722fc8005b137, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ToolManager
 --- !u!1 &490114209
 GameObject:
   m_ObjectHideFlags: 0
@@ -3808,7 +3838,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 273, y: 0}
+  m_AnchoredPosition: {x: 273, y: 32.3}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1332145657
@@ -3866,8 +3896,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 20
-  m_fontSizeBase: 20
+  m_fontSize: 18
+  m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -4099,6 +4129,7 @@ RectTransform:
   - {fileID: 764127706}
   - {fileID: 436001371}
   - {fileID: 1332145656}
+  - {fileID: 486866907}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -4850,7 +4881,6 @@ GameObject:
   - component: {fileID: 1877511454}
   - component: {fileID: 1877511453}
   - component: {fileID: 1877511452}
-  - component: {fileID: 1877511451}
   m_Layer: 5
   m_Name: Upgrade Axe Button
   m_TagString: Untagged
@@ -4878,19 +4908,6 @@ RectTransform:
   m_AnchoredPosition: {x: 3.2, y: 73.3}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1877511451
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1877511449}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b1183dd57ed17a6459057addf3ec6d1c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BuildSelectButton
-  buildType: 1
 --- !u!114 &1877511452
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4935,9 +4952,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1877511451}
-        m_TargetAssemblyTypeName: BuildSelectButton, Assembly-CSharp
-        m_MethodName: OnClickSelect
+      - m_Target: {fileID: 1543107008}
+        m_TargetAssemblyTypeName: WorkshopUI, Assembly-CSharp
+        m_MethodName: RenderConfirmButton
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4947,9 +4964,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1543107008}
-        m_TargetAssemblyTypeName: WorkshopUI, Assembly-CSharp
-        m_MethodName: RenderConfirmButton
+      - m_Target: {fileID: 269007593}
+        m_TargetAssemblyTypeName: ToolSelectUpgrade, Assembly-CSharp
+        m_MethodName: SelectAxe
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
