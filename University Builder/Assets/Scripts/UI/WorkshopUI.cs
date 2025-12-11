@@ -57,14 +57,24 @@ public class WorkshopUI : MonoBehaviour
 
         IsOpen = false;
     }
+
+    // --------- CONFIRM BUTTON ---------
+
     public void RenderConfirmButton()
     {
         if (ConfirmButton == null)
             return;
 
-        if (SelectedBuildTracker.Instance == null ||
-            !SelectedBuildTracker.Instance.HasSelection ||
-            ResourcesManager.Instance == null)
+        bool toolMode =
+            ToolSelectUpgrade.Instance != null &&
+            ToolSelectUpgrade.Instance.HasSelection;
+
+        bool buildMode =
+            !toolMode &&
+            SelectedBuildTracker.Instance != null &&
+            SelectedBuildTracker.Instance.HasSelection;
+
+        if (!toolMode && !buildMode)
         {
             ConfirmButton.SetActive(false);
             return;
@@ -76,40 +86,84 @@ public class WorkshopUI : MonoBehaviour
         if (buttonImage == null)
             return;
 
-        bool canAfford = SelectedBuildTracker.Instance.CanAffordCurrentBuild();
+        bool canAfford = false;
+
+        if (toolMode)
+        {
+            canAfford = ToolSelectUpgrade.Instance.CanAffordSelectedUpgrade();
+        }
+        else if (buildMode)
+        {
+            canAfford = SelectedBuildTracker.Instance.CanAffordCurrentBuild();
+        }
+
         buttonImage.color = canAfford ? Color.green : Color.gray;
     }
 
     public void ClickConfirmButton()
     {
-        if (SelectedBuildTracker.Instance == null)
+        if (ToolSelectUpgrade.Instance != null &&
+            ToolSelectUpgrade.Instance.HasSelection)
+        {
+            bool upgraded = ToolSelectUpgrade.Instance.TryApplyUpgrade();
+            RenderConfirmButton();
             return;
+        }
 
-        SelectedBuildTracker.Instance.TryStartConstruction();
+        if (SelectedBuildTracker.Instance != null &&
+            SelectedBuildTracker.Instance.HasSelection)
+        {
+            SelectedBuildTracker.Instance.TryStartConstruction();
+            RenderConfirmButton();
+        }
     }
 
     public void HideConfirmButton()
     {
-        ConfirmButton.SetActive(false);
+        if (ConfirmButton != null)
+            ConfirmButton.SetActive(false);
     }
+
+    // --------- MENUS ---------
 
     public void OpenBuildMenu()
     {
-        BuildMenu.SetActive(true);
+        if (BuildMenu != null)
+            BuildMenu.SetActive(true);
+
+        if (ToolSelectUpgrade.Instance != null)
+            ToolSelectUpgrade.Instance.ClearSelection();
+
+        RenderConfirmButton();
     }
 
     public void CloseBuildMenu()
     {
-        BuildMenu.SetActive(false);
+        if (BuildMenu != null)
+            BuildMenu.SetActive(false);
+
+        RenderConfirmButton();
     }
 
     public void OpenUpgradeToolMenu()
     {
-        UpgradeToolMenu.SetActive(true);
+        if (UpgradeToolMenu != null)
+            UpgradeToolMenu.SetActive(true);
+
+        if (SelectedBuildTracker.Instance != null)
+            SelectedBuildTracker.Instance.ClearSelection();
+
+        RenderConfirmButton();
     }
 
     public void CloseUpgradeToolMenu()
     {
-        UpgradeToolMenu.SetActive(false);
+        if (UpgradeToolMenu != null)
+            UpgradeToolMenu.SetActive(false);
+
+        if (ToolSelectUpgrade.Instance != null)
+            ToolSelectUpgrade.Instance.ClearSelection();
+
+        RenderConfirmButton();
     }
 }
