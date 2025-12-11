@@ -3,13 +3,17 @@ using UnityEngine;
 
 public class WorkshopUI : MonoBehaviour
 {
-    [SerializeField] private List<GameObject> workshopPanels = new();  // <— NOW A LIST!
+    [SerializeField] private List<GameObject> AllWorkshopPanels = new();
+    [SerializeField] private List<GameObject> MainWorkshopPanels = new();
+
+    [SerializeField] private GameObject BuildMenu;
+    [SerializeField] private GameObject ConfirmButton;
 
     public bool IsOpen { get; private set; }
 
     private void Awake()
     {
-        foreach (var panel in workshopPanels)
+        foreach (var panel in AllWorkshopPanels)
         {
             if (panel != null)
                 panel.SetActive(false);
@@ -26,7 +30,7 @@ public class WorkshopUI : MonoBehaviour
 
     public void OpenMenu()
     {
-        foreach (var panel in workshopPanels)
+        foreach (var panel in MainWorkshopPanels)
         {
             if (panel != null)
                 panel.SetActive(true);
@@ -40,7 +44,7 @@ public class WorkshopUI : MonoBehaviour
 
     public void CloseMenu()
     {
-        foreach (var panel in workshopPanels)
+        foreach (var panel in AllWorkshopPanels)
         {
             if (panel != null)
                 panel.SetActive(false);
@@ -50,5 +54,25 @@ public class WorkshopUI : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
 
         IsOpen = false;
+    }
+
+    public void RenderConfirmButton()
+    {
+        ConfirmButton.SetActive(true);
+    }
+
+    public void HideConfirmButton()
+    {
+        ConfirmButton.SetActive(false);
+    }
+
+    public void OpenBuildMenu()
+    {
+        BuildMenu.SetActive(true);
+    }
+
+    public void CloseBuildMenu()
+    {
+        BuildMenu.SetActive(false);
     }
 }

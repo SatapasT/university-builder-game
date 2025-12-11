@@ -22,6 +22,11 @@ public class ResourcesManager : MonoBehaviour
         Instance = this;
 
         popupText.gameObject.SetActive(false);
+
+        foreach (ResourceType type in System.Enum.GetValues(typeof(ResourceType)))
+        {
+            resources[type] = 0;
+        }
     }
 
     public void AddResource(ResourceType type, int amount)
@@ -45,5 +50,10 @@ public class ResourcesManager : MonoBehaviour
         yield return new WaitForSeconds(2f);
         popupText.gameObject.SetActive(false);
         hideRoutine = null;
+    }
+
+    public Dictionary<ResourceType, int> GetAllResources()
+    {
+        return resources;
     }
 }
