@@ -35,9 +35,8 @@ namespace DefaultNamespace
                 currentTarget = newTarget;
             }
 
-            if (currentTarget != null && Keyboard.current.fKey.wasPressedThisFrame)
+            if (currentTarget != null && Mouse.current.leftButton.wasPressedThisFrame)
             {
-                Debug.Log($"Interacting with {((MonoBehaviour)currentTarget).name}");
                 currentTarget.Interact();
             }
         }

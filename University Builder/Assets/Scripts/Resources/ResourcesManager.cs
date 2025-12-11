@@ -45,6 +45,22 @@ public class ResourcesManager : MonoBehaviour
         hideRoutine = StartCoroutine(HideAfterDelay());
     }
 
+    public void DeductResources(ResourceType type, int amount)
+    {
+        if (!resources.ContainsKey(type))
+            resources[type] = 0;
+
+        resources[type] -= amount;
+
+        popupText.text = $"{type}: {resources[type]}";
+        popupText.gameObject.SetActive(true);
+
+        if (hideRoutine != null)
+            StopCoroutine(hideRoutine);
+
+        hideRoutine = StartCoroutine(HideAfterDelay());
+    }
+
     private IEnumerator HideAfterDelay()
     {
         yield return new WaitForSeconds(2f);

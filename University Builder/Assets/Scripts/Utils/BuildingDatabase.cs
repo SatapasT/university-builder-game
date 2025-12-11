@@ -41,8 +41,8 @@ public static class BuildDatabase
                     "One of Durham's landmarks.",
                     new[]
                     {
-                        new ResourceAmount(ResourceType.Wood, 30),
-                        new ResourceAmount(ResourceType.Stone, 30)
+                        new ResourceAmount(ResourceType.Wood, 5),
+                        new ResourceAmount(ResourceType.Stone, 5)
                     }
                 )
             }
