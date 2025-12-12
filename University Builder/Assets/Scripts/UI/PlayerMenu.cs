@@ -97,36 +97,54 @@ public class PlayerMenu : MonoBehaviour
     private string BuildToolLine(ToolType type)
     {
         if (PlayerStats.Instance == null)
-            return $"{type}: (no stats – PlayerStats missing)";
+            return $"<color=red><b>{type}</b>: PlayerStats missing</color>";
 
         ToolInfo info = PlayerStats.Instance.GetCurrentToolInfo(type);
 
         if (info == null)
-            return $"{type}: None";
+            return $"<color=red><b>{type}</b>: None</color>";
 
-        // Name
-        string line = $"<b>{info.Name}</b>\n";
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
-        // Description
+        // ----- NAME -----
+        sb.AppendLine($"<b><color=yellow>{info.Name}</color></b>");
+        sb.AppendLine();
+
+        // ----- DESCRIPTION -----
         if (!string.IsNullOrWhiteSpace(info.Description))
-            line += info.Description + "\n";
+        {
+            sb.AppendLine($"<color=#DDDDDD>{info.Description}</color>");
+            sb.AppendLine();
+        }
 
-        // Stats
-        string stats = "";
+        // ----- STATS HEADER -----
+        sb.AppendLine("<b><color=orange>STATS</color></b>");
 
+        bool hasStat = false;
+
+        // ----- HARVEST STAT -----
         if (info.HarvestAmount > 0)
-            stats += $"- Harvest: +{info.HarvestAmount} per action\n";
+        {
+            hasStat = true;
+            sb.AppendLine($"<color=#90EE90>- Harvest:</color> <b>+{info.HarvestAmount}</b> per action");
+        }
 
+        // ----- SPEED STAT -----
         if (info.MovementSpeedBonus > 0f && info.MovementSpeedBonus != 1f)
-            stats += $"- Move Speed: x{info.MovementSpeedBonus:0.00}\n";
+        {
+            hasStat = true;
+            sb.AppendLine($"<color=#ADD8E6>- Move Speed:</color> <b>x{info.MovementSpeedBonus:0.00}</b>");
+        }
 
-        if (string.IsNullOrWhiteSpace(stats))
-            stats = "- No bonuses\n";
+        // ----- NO BONUS CASE -----
+        if (!hasStat)
+        {
+            sb.AppendLine("<color=grey>- No bonuses</color>");
+        }
 
-        line += stats;
-
-        return line.TrimEnd('\n');
+        return sb.ToString().TrimEnd();
     }
+
 
     public void openPlayerStats()
     {
