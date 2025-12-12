@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,13 +9,18 @@ public class WorkshopUI : MonoBehaviour
     [SerializeField] private List<GameObject> AllWorkshopPanels = new();
     [SerializeField] private List<GameObject> MainWorkshopPanels = new();
 
+    [Header("Sub-menus")]
     [SerializeField] private GameObject BuildMenu;
     [SerializeField] private GameObject AssignWorkerMenu;
     [SerializeField] private GameObject UpgradeToolMenu;
     [SerializeField] private GameObject RefineMaterialMenu;
+
+    [Header("Confirm")]
     [SerializeField] private GameObject ConfirmButton;
 
     public bool IsOpen { get; private set; }
+
+    public bool IsAssignWorkerMenuOpen => AssignWorkerMenu != null && AssignWorkerMenu.activeInHierarchy;
 
     private void Awake()
     {
@@ -28,10 +33,7 @@ public class WorkshopUI : MonoBehaviour
         Instance = this;
 
         foreach (GameObject panel in AllWorkshopPanels)
-        {
-            if (panel != null)
-                panel.SetActive(false);
-        }
+            if (panel != null) panel.SetActive(false);
 
         IsOpen = false;
     }
@@ -45,11 +47,9 @@ public class WorkshopUI : MonoBehaviour
     public void OpenMenu()
     {
         UIManager.Instance.SetMenuState(true);
+
         foreach (GameObject panel in MainWorkshopPanels)
-        {
-            if (panel != null)
-                panel.SetActive(true);
-        }
+            if (panel != null) panel.SetActive(true);
 
         IsOpen = true;
         RenderConfirmButton();
@@ -57,22 +57,22 @@ public class WorkshopUI : MonoBehaviour
 
     public void CloseMenu()
     {
+        AssignWorkerUI.Instance?.ClearSelectionUI();
+
         UIManager.Instance.SetMenuState(false);
+
         foreach (GameObject panel in AllWorkshopPanels)
-        {
-            if (panel != null)
-                panel.SetActive(false);
-        }
+            if (panel != null) panel.SetActive(false);
 
         IsOpen = false;
+        HideConfirmButton();
     }
 
-    // --------- CONFIRM BUTTON ---------
+    // ---------------- CONFIRM ----------------
 
     public void RenderConfirmButton()
     {
-        if (ConfirmButton == null)
-            return;
+        if (ConfirmButton == null) return;
 
         bool toolMode =
             ToolSelectUpgrade.Instance != null &&
@@ -88,12 +88,11 @@ public class WorkshopUI : MonoBehaviour
             RefineMaterialsUI.Instance != null &&
             RefineMaterialsUI.Instance.HasSelection;
 
-        // NEW: Assign Worker mode (only if menu is open + AssignWorkerUI has valid selection)
         bool assignMode =
             !toolMode && !buildMode && !refineMode &&
-            AssignWorkerMenu != null && AssignWorkerMenu.activeInHierarchy &&
-            AssignWorkerUI.Instance != null &&
-            AssignWorkerUI.Instance.HasValidSelection;
+            AssignWorkerMenu != null &&
+            AssignWorkerMenu.activeInHierarchy &&
+            AssignWorkerUI.Instance != null;
 
         if (!toolMode && !buildMode && !refineMode && !assignMode)
         {
@@ -104,8 +103,7 @@ public class WorkshopUI : MonoBehaviour
         ConfirmButton.SetActive(true);
 
         Image buttonImage = ConfirmButton.GetComponent<Image>();
-        if (buttonImage == null)
-            return;
+        if (buttonImage == null) return;
 
         bool canConfirm = false;
 
@@ -123,37 +121,32 @@ public class WorkshopUI : MonoBehaviour
 
     public void ClickConfirmButton()
     {
-        if (ToolSelectUpgrade.Instance != null &&
-            ToolSelectUpgrade.Instance.HasSelection)
+        if (ToolSelectUpgrade.Instance != null && ToolSelectUpgrade.Instance.HasSelection)
         {
             ToolSelectUpgrade.Instance.TryApplyUpgrade();
             RenderConfirmButton();
             return;
         }
 
-        if (SelectedBuildTracker.Instance != null &&
-            SelectedBuildTracker.Instance.HasSelection)
+        if (SelectedBuildTracker.Instance != null && SelectedBuildTracker.Instance.HasSelection)
         {
             SelectedBuildTracker.Instance.TryStartConstruction();
             RenderConfirmButton();
             return;
         }
 
-        if (RefineMaterialsUI.Instance != null &&
-            RefineMaterialsUI.Instance.HasSelection)
+        if (RefineMaterialsUI.Instance != null && RefineMaterialsUI.Instance.HasSelection)
         {
             RefineMaterialsUI.Instance.TryApplyRefine();
             RenderConfirmButton();
             return;
         }
 
-        // NEW: Assign Worker confirm
         if (AssignWorkerMenu != null && AssignWorkerMenu.activeInHierarchy &&
             AssignWorkerUI.Instance != null)
         {
             AssignWorkerUI.Instance.ConfirmAssign();
             RenderConfirmButton();
-            return;
         }
     }
 
@@ -163,62 +156,60 @@ public class WorkshopUI : MonoBehaviour
             ConfirmButton.SetActive(false);
     }
 
-    // --------- MENUS ---------
+    // ---------------- MENUS ----------------
 
     public void OpenBuildMenu()
     {
-        if (BuildMenu != null)
-            BuildMenu.SetActive(true);
+        AssignWorkerUI.Instance?.ClearSelectionUI();
 
-        if (ToolSelectUpgrade.Instance != null)
-            ToolSelectUpgrade.Instance.ClearSelection();
+        if (BuildMenu != null) BuildMenu.SetActive(true);
+
+        ToolSelectUpgrade.Instance?.ClearSelection();
+        RefineMaterialsUI.Instance?.ClearSelection();
 
         RenderConfirmButton();
     }
 
     public void CloseBuildMenu()
     {
-        if (BuildMenu != null)
-            BuildMenu.SetActive(false);
-
+        if (BuildMenu != null) BuildMenu.SetActive(false);
         RenderConfirmButton();
     }
 
     public void OpenUpgradeToolMenu()
     {
-        if (UpgradeToolMenu != null)
-            UpgradeToolMenu.SetActive(true);
+        AssignWorkerUI.Instance?.ClearSelectionUI();
 
-        if (SelectedBuildTracker.Instance != null)
-            SelectedBuildTracker.Instance.ClearSelection();
+        if (UpgradeToolMenu != null) UpgradeToolMenu.SetActive(true);
+
+        SelectedBuildTracker.Instance?.ClearSelection();
+        RefineMaterialsUI.Instance?.ClearSelection();
 
         RenderConfirmButton();
     }
 
     public void CloseUpgradeToolMenu()
     {
-        if (UpgradeToolMenu != null)
-            UpgradeToolMenu.SetActive(false);
+        if (UpgradeToolMenu != null) UpgradeToolMenu.SetActive(false);
 
-        if (ToolSelectUpgrade.Instance != null)
-            ToolSelectUpgrade.Instance.ClearSelection();
-
+        ToolSelectUpgrade.Instance?.ClearSelection();
         RenderConfirmButton();
     }
 
     public void OpenRefineMaterialMenu()
     {
-        if (RefineMaterialMenu != null)
-            RefineMaterialMenu.SetActive(true);
+        AssignWorkerUI.Instance?.ClearSelectionUI();
+
+        if (RefineMaterialMenu != null) RefineMaterialMenu.SetActive(true);
 
         RenderConfirmButton();
     }
 
     public void CloseRefineMaterialMenu()
     {
-        if (RefineMaterialMenu != null)
-            RefineMaterialMenu.SetActive(false);
+        if (RefineMaterialMenu != null) RefineMaterialMenu.SetActive(false);
 
+        RefineMaterialsUI.Instance?.ClearSelection();
         RenderConfirmButton();
     }
 
@@ -227,16 +218,19 @@ public class WorkshopUI : MonoBehaviour
         if (AssignWorkerMenu != null)
             AssignWorkerMenu.SetActive(true);
 
-        // refresh + show confirm if valid
-        AssignWorkerUI.Instance?.RefreshAll();
+        AssignWorkerUI.Instance?.RefreshDropdowns();
+        AssignWorkerUI.Instance?.ClearSelectionUI();
+
         RenderConfirmButton();
     }
+
 
     public void CloseAssignWorkerMenu()
     {
         if (AssignWorkerMenu != null)
             AssignWorkerMenu.SetActive(false);
 
+        AssignWorkerUI.Instance?.ClearSelectionUI();
         RenderConfirmButton();
     }
 }

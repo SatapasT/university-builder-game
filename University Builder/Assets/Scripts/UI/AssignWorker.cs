@@ -13,15 +13,14 @@ public class AssignWorkerUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI infoText;
 
     private readonly List<int> workerIdByOptionIndex = new();
-    private readonly List<BuildType> taskByOptionIndex = new();
+    private readonly List<WorkerManager.WorkerTask> taskByOptionIndex = new();
 
     private int selectedWorkerId = -1;
-    private BuildType selectedTask = BuildType.None;
+    private WorkerManager.WorkerTask selectedTask = WorkerManager.WorkerTask.None;
 
-    public bool HasValidSelection => selectedWorkerId > 0 && selectedTask != BuildType.None;
-
-    [SerializeField] private float uiRefreshInterval = 0.2f;
-    private float uiRefreshTimer = 0f;
+    public bool HasValidSelection =>
+        selectedWorkerId > 0 &&
+        selectedTask.type != WorkerManager.WorkerTaskType.None;
 
     private void Awake()
     {
@@ -30,7 +29,8 @@ public class AssignWorkerUI : MonoBehaviour
 
     private void OnEnable()
     {
-        RefreshAll();
+        RefreshDropdowns();
+        ClearSelectionUI();
 
         if (BuildProgressTracker.Instance != null)
             BuildProgressTracker.Instance.OnBuildStateChanged += OnBuildStateChanged;
@@ -40,40 +40,46 @@ public class AssignWorkerUI : MonoBehaviour
     {
         if (BuildProgressTracker.Instance != null)
             BuildProgressTracker.Instance.OnBuildStateChanged -= OnBuildStateChanged;
-    }
 
-    private void Update()
-    {
-        uiRefreshTimer -= Time.deltaTime;
-        if (uiRefreshTimer <= 0f)
-        {
-            uiRefreshTimer = uiRefreshInterval;
-            UpdateInfoText();
-        }
+        // Match other menus: when leaving, clear + hide
+        ClearSelectionUI();
     }
 
     private void OnBuildStateChanged(BuildType type, BuildProgressTracker.BuildState state)
     {
-        RefreshAll();
-    }
-
-    public void RefreshAll()
-    {
-        RefreshWorkerDropdown();
+        // tasks list can change based on build state
         RefreshTaskDropdown();
-
-        selectedWorkerId = -1;
-        selectedTask = BuildType.None;
-
-        if (workerDropdown != null) workerDropdown.value = 0;
-        if (taskDropdown != null) taskDropdown.value = 0;
-
-        workerDropdown?.RefreshShownValue();
-        taskDropdown?.RefreshShownValue();
-
+        // keep info consistent with current dropdown values
+        selectedWorkerId = GetSelectedWorkerId();
+        selectedTask = GetSelectedTask();
         UpdateInfoText();
         WorkshopUI.Instance?.RenderConfirmButton();
     }
+
+    // ---------------- PUBLIC API (WorkshopUI calls this when switching menus) ----------------
+
+    public void ClearSelectionUI()
+    {
+        selectedWorkerId = -1;
+        selectedTask = WorkerManager.WorkerTask.None;
+
+        if (workerDropdown != null)
+        {
+            workerDropdown.SetValueWithoutNotify(0);
+            workerDropdown.RefreshShownValue();
+        }
+
+        if (taskDropdown != null)
+        {
+            taskDropdown.SetValueWithoutNotify(0);
+            taskDropdown.RefreshShownValue();
+        }
+
+        HideInfo();
+        WorkshopUI.Instance?.RenderConfirmButton();
+    }
+
+    // ---------------- Dropdown events (hook these in Inspector) ----------------
 
     public void OnWorkerDropdownChanged(int _)
     {
@@ -89,6 +95,8 @@ public class AssignWorkerUI : MonoBehaviour
         WorkshopUI.Instance?.RenderConfirmButton();
     }
 
+    // ---------------- Confirm ----------------
+
     public void ConfirmAssign()
     {
         if (!CanConfirmAssign())
@@ -96,6 +104,8 @@ public class AssignWorkerUI : MonoBehaviour
 
         WorkerManager.Instance.AssignWorker(selectedWorkerId, selectedTask);
 
+        // IMPORTANT: do NOT ClearSelectionUI here, otherwise it looks like nothing changed.
+        // Just refresh info based on current dropdown selection.
         UpdateInfoText();
         WorkshopUI.Instance?.RenderConfirmButton();
     }
@@ -105,11 +115,22 @@ public class AssignWorkerUI : MonoBehaviour
         if (WorkerManager.Instance == null) return false;
         if (!HasValidSelection) return false;
 
-        if (BuildProgressTracker.Instance == null) return false;
-        if (BuildProgressTracker.Instance.GetState(selectedTask) != BuildProgressTracker.BuildState.InProgress)
-            return false;
+        if (selectedTask.type == WorkerManager.WorkerTaskType.Build)
+        {
+            if (BuildProgressTracker.Instance == null) return false;
+            if (BuildProgressTracker.Instance.GetState(selectedTask.buildType) != BuildProgressTracker.BuildState.InProgress)
+                return false;
+        }
 
         return true;
+    }
+
+    // ---------------- Dropdown building ----------------
+
+    public void RefreshDropdowns()
+    {
+        RefreshWorkerDropdown();
+        RefreshTaskDropdown();
     }
 
     private void RefreshWorkerDropdown()
@@ -122,16 +143,6 @@ public class AssignWorkerUI : MonoBehaviour
         var options = new List<string>();
 
         int max = WorkerManager.Instance != null ? WorkerManager.Instance.GetMaxWorkers() : 0;
-        if (max <= 0)
-        {
-            options.Add("No Workers");
-            workerIdByOptionIndex.Add(-1);
-            workerDropdown.AddOptions(options);
-            workerDropdown.interactable = false;
-            return;
-        }
-
-        workerDropdown.interactable = true;
 
         options.Add("Select Worker");
         workerIdByOptionIndex.Add(-1);
@@ -155,9 +166,13 @@ public class AssignWorkerUI : MonoBehaviour
         var options = new List<string>();
 
         options.Add("Select Task");
-        taskByOptionIndex.Add(BuildType.None);
+        taskByOptionIndex.Add(WorkerManager.WorkerTask.None);
 
-        bool anyInProgress = false;
+        options.Add("Gather Wood");
+        taskByOptionIndex.Add(WorkerManager.WorkerTask.GatherWood());
+
+        options.Add("Gather Stone");
+        taskByOptionIndex.Add(WorkerManager.WorkerTask.GatherStone());
 
         if (BuildProgressTracker.Instance != null)
         {
@@ -166,20 +181,12 @@ public class AssignWorkerUI : MonoBehaviour
                 if (bt == BuildType.None) continue;
 
                 var state = BuildProgressTracker.Instance.GetState(bt);
-
                 if (state == BuildProgressTracker.BuildState.InProgress)
                 {
-                    anyInProgress = true;
-                    options.Add(bt.ToString());
-                    taskByOptionIndex.Add(bt);
+                    options.Add($"Build: {bt}");
+                    taskByOptionIndex.Add(WorkerManager.WorkerTask.Build(bt));
                 }
             }
-        }
-
-        if (!anyInProgress)
-        {
-            options.Add("No Active Construction");
-            taskByOptionIndex.Add(BuildType.None);
         }
 
         taskDropdown.AddOptions(options);
@@ -193,12 +200,21 @@ public class AssignWorkerUI : MonoBehaviour
         return workerIdByOptionIndex[idx];
     }
 
-    private BuildType GetSelectedTask()
+    private WorkerManager.WorkerTask GetSelectedTask()
     {
-        if (taskDropdown == null) return BuildType.None;
+        if (taskDropdown == null) return WorkerManager.WorkerTask.None;
         int idx = taskDropdown.value;
-        if (idx < 0 || idx >= taskByOptionIndex.Count) return BuildType.None;
+        if (idx < 0 || idx >= taskByOptionIndex.Count) return WorkerManager.WorkerTask.None;
         return taskByOptionIndex[idx];
+    }
+
+    // ---------------- Info display (dropdown-driven only) ----------------
+
+    private void HideInfo()
+    {
+        if (infoText == null) return;
+        infoText.text = string.Empty;
+        infoText.gameObject.SetActive(false);
     }
 
     private void UpdateInfoText()
@@ -206,63 +222,50 @@ public class AssignWorkerUI : MonoBehaviour
         if (infoText == null || WorkerManager.Instance == null)
             return;
 
-        if (!infoText.gameObject.activeSelf)
-            infoText.gameObject.SetActive(true);
+        bool hasWorkerSelected = selectedWorkerId > 0;
+        bool hasTaskSelected = selectedTask.type != WorkerManager.WorkerTaskType.None;
+
+        // ✅ exactly what you asked: show/hide based ONLY on dropdown selections
+        if (!hasWorkerSelected && !hasTaskSelected)
+        {
+            HideInfo();
+            return;
+        }
+
+        infoText.gameObject.SetActive(true);
 
         var sb = new StringBuilder();
 
-        // ---------------- CURRENT WORKER ASSIGNMENT ----------------
         sb.AppendLine("<b><color=orange>Selected Worker</color></b>");
-        if (selectedWorkerId <= 0)
+        if (!hasWorkerSelected)
         {
             sb.AppendLine("None selected.");
         }
         else
         {
-            BuildType current = WorkerManager.Instance.GetWorkerTask(selectedWorkerId);
-            sb.AppendLine(
-                $"Worker {selectedWorkerId} is assigned to: " +
-                $"<color=yellow>{(current == BuildType.None ? "Idle" : current.ToString())}</color>"
-            );
+            var current = WorkerManager.Instance.GetWorkerFullTask(selectedWorkerId);
+            sb.AppendLine($"Worker {selectedWorkerId} is assigned to: <color=yellow>{current.DisplayName()}</color>");
         }
 
         sb.AppendLine();
 
-        // ---------------- TASK ----------------
         sb.AppendLine("<b><color=orange>Selected Task</color></b>");
-        if (selectedTask == BuildType.None)
+        if (!hasTaskSelected)
         {
-            sb.AppendLine("No task selected.");
+            sb.AppendLine("None selected.");
             infoText.text = sb.ToString();
             return;
         }
 
-        sb.AppendLine($"Task: <color=yellow>{selectedTask}</color>");
+        sb.AppendLine($"Task: <color=yellow>{selectedTask.DisplayName()}</color>");
 
         var workers = WorkerManager.Instance.GetWorkersAssignedTo(selectedTask);
         sb.AppendLine("Workers assigned:");
-        if (workers.Count == 0)
-        {
-            sb.AppendLine("- None");
-        }
+        if (workers.Count == 0) sb.AppendLine("- None");
         else
         {
             foreach (int w in workers)
                 sb.AppendLine($"- Worker {w}");
-        }
-
-        // ---------------- REMAINING TIME ----------------
-        if (SelectedBuildTracker.Instance != null &&
-            SelectedBuildTracker.Instance.TryGetSiteAndConstruction(selectedTask, out _, out var construction) &&
-            construction != null && construction.IsBuilding && !construction.IsFinished)
-        {
-            float remaining = construction.GetRemainingSeconds();
-            int workerCount = WorkerManager.Instance.GetAssignedCount(selectedTask);
-
-            sb.AppendLine();
-            sb.AppendLine("<b><color=orange>Construction</color></b>");
-            sb.AppendLine($"Remaining Time: <color=yellow>{remaining:0.0}s</color>");
-            sb.AppendLine($"Active Workers: <color=yellow>{workerCount}</color> (1 worker = 1s/s)");
         }
 
         infoText.text = sb.ToString();

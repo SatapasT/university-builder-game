@@ -19,46 +19,30 @@ public class BuilderAgent : MonoBehaviour
     [SerializeField] private float targetSampleRadius = 12f;
     [SerializeField] private float repathInterval = 0.75f;
 
-    [Header("Stuck Detection")]
-    [SerializeField] private float stuckVelocity = 0.08f;
-    [SerializeField] private float stuckTimeToAccept = 0.6f;
-    [SerializeField] private float progressEpsilon = 0.05f;
-
-    private enum State { GoingToSite, Working }
-    private State state = State.GoingToSite;
+    private enum Mode { Idle, Build, Gather }
+    private Mode mode = Mode.Idle;
 
     private NavMeshAgent agent;
+
+    private Transform idlePoint;
+
     private Transform target;
     private BuildingConstruction construction;
 
     private float repathTimer = 0f;
-    private float bestDistanceToTarget = float.MaxValue;
-    private float stuckTimer = 0f;
 
-    public void Initialize(Transform targetTransform, BuildingConstruction targetConstruction)
+    private void Awake()
     {
-        target = targetTransform;
-        construction = targetConstruction;
-
         agent = GetComponent<NavMeshAgent>();
-        if (agent == null || target == null || construction == null)
+        if (agent == null)
         {
-            Debug.LogError("BuilderAgent: Initialize missing components/refs.");
+            Debug.LogError("BuilderAgent: NavMeshAgent missing.");
             enabled = false;
             return;
         }
 
         if (overrideAgentSettings)
             ApplySnappySettings();
-
-        FixSpawnToNavMesh();
-        ForceDestinationAsCloseAsPossible();
-
-        state = State.GoingToSite;
-        repathTimer = 0f;
-
-        bestDistanceToTarget = Vector3.Distance(transform.position, target.position);
-        stuckTimer = 0f;
     }
 
     private void ApplySnappySettings()
@@ -73,33 +57,51 @@ public class BuilderAgent : MonoBehaviour
         agent.obstacleAvoidanceType = ObstacleAvoidanceType.LowQualityObstacleAvoidance;
     }
 
-    private void Update()
+    public void SetIdle(Transform idleTransform)
     {
-        if (agent == null || target == null || construction == null)
-            return;
+        idlePoint = idleTransform;
+        target = idleTransform;
+        construction = null;
+        mode = Mode.Idle;
 
-        if (construction.IsFinished)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        if (!agent.isOnNavMesh)
-            FixSpawnToNavMesh();
-
-        switch (state)
-        {
-            case State.GoingToSite:
-                UpdateGoingToSite();
-                break;
-            case State.Working:
-                UpdateWorking();
-                break;
-        }
+        FixToNavMesh();
+        ForceDestinationAsCloseAsPossible();
     }
 
-    private void UpdateGoingToSite()
+    public void SetBuildTarget(Transform site, BuildingConstruction bc)
     {
+        target = site;
+        construction = bc;
+        mode = Mode.Build;
+
+        FixToNavMesh();
+        ForceDestinationAsCloseAsPossible();
+    }
+
+    public void SetGatherTarget(Transform gatherTarget)
+    {
+        target = gatherTarget;
+        construction = null;
+        mode = Mode.Gather;
+
+        FixToNavMesh();
+        ForceDestinationAsCloseAsPossible();
+    }
+
+    private void Update()
+    {
+        if (agent == null || target == null)
+            return;
+
+        if (!agent.isOnNavMesh)
+            FixToNavMesh();
+
+        if (mode == Mode.Build && construction != null && construction.IsFinished)
+        {
+            SetIdle(idlePoint != null ? idlePoint : target);
+            return;
+        }
+
         repathTimer -= Time.deltaTime;
         if (repathTimer <= 0f)
         {
@@ -111,65 +113,16 @@ public class BuilderAgent : MonoBehaviour
 
         if (distToTarget <= arriveDistance)
         {
-            BeginWork();
-            return;
+            agent.isStopped = true;
         }
-
-        if (distToTarget + progressEpsilon < bestDistanceToTarget)
-        {
-            bestDistanceToTarget = distToTarget;
-            stuckTimer = 0f;
-        }
-        else
-        {
-            if (agent.velocity.magnitude <= stuckVelocity)
-                stuckTimer += Time.deltaTime;
-            else
-                stuckTimer = 0f;
-        }
-
-        bool pathBad = agent.pathStatus == NavMeshPathStatus.PathPartial || agent.pathStatus == NavMeshPathStatus.PathInvalid;
-
-        if (pathBad && distToTarget <= maxWorkDistance)
-        {
-            BeginWork();
-            return;
-        }
-
-        if (stuckTimer >= stuckTimeToAccept && distToTarget <= maxWorkDistance)
-        {
-            BeginWork();
-            return;
-        }
-    }
-
-    private void BeginWork()
-    {
-        state = State.Working;
-        agent.isStopped = true;
-    }
-
-    private void UpdateWorking()
-    {
-        float distToTarget = Vector3.Distance(transform.position, target.position);
-
-        if (distToTarget > maxWorkDistance)
+        else if (distToTarget > maxWorkDistance)
         {
             agent.isStopped = false;
-            state = State.GoingToSite;
-
-            stuckTimer = 0f;
-            bestDistanceToTarget = distToTarget;
-
-            ForceDestinationAsCloseAsPossible();
-            return;
         }
     }
 
-    private void FixSpawnToNavMesh()
+    private void FixToNavMesh()
     {
-        if (agent == null) return;
-
         if (agent.isOnNavMesh)
             return;
 
@@ -177,24 +130,15 @@ public class BuilderAgent : MonoBehaviour
         {
             agent.Warp(hit.position);
         }
-        else
-        {
-            Debug.LogError("BuilderAgent: Spawn is too far from NavMesh. Move AI spawn point closer to the baked NavMesh.");
-        }
     }
 
     private void ForceDestinationAsCloseAsPossible()
     {
-        if (agent == null || target == null) return;
+        if (target == null)
+            return;
 
         if (!NavMesh.SamplePosition(target.position, out NavMeshHit nearTarget, targetSampleRadius, NavMesh.AllAreas))
-        {
-            Vector3 fallback = transform.position + (target.position - transform.position).normalized * 4f;
-            if (NavMesh.SamplePosition(fallback, out NavMeshHit nearFallback, targetSampleRadius, NavMesh.AllAreas))
-                agent.SetDestination(nearFallback.position);
-
             return;
-        }
 
         agent.isStopped = false;
         agent.SetDestination(nearTarget.position);

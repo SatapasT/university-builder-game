@@ -37,7 +37,6 @@ public class BuildingConstruction : MonoBehaviour
         if (IsBuilding || IsFinished)
             return;
 
-        // Pull required time from BuildDatabase
         var info = BuildDatabase.Get(buildType);
         requiredSeconds = info != null ? Mathf.Max(1f, info.BuildTimeSeconds) : 10f;
 
@@ -55,10 +54,9 @@ public class BuildingConstruction : MonoBehaviour
         if (!IsBuilding || IsFinished)
             return;
 
-        // Your rule: each assigned worker contributes 1 second per second
         int workers = WorkerManager.Instance != null ? WorkerManager.Instance.GetAssignedCount(buildType) : 0;
         if (workers <= 0)
-            return; // paused until someone assigned
+            return; 
 
         progressSeconds += workers * Time.deltaTime;
 
