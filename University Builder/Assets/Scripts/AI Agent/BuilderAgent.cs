@@ -6,7 +6,6 @@ public class BuilderAgent : MonoBehaviour
     [Header("Arrival / Work")]
     [SerializeField] private float arriveDistance = 1.5f;
     [SerializeField] private float maxWorkDistance = 4.0f;
-    [SerializeField] private float workSeconds = 5f;
 
     [Header("Movement Feel (snappy)")]
     [SerializeField] private bool overrideAgentSettings = true;
@@ -18,12 +17,12 @@ public class BuilderAgent : MonoBehaviour
     [Header("NavMesh Robustness")]
     [SerializeField] private float spawnSampleRadius = 8f;
     [SerializeField] private float targetSampleRadius = 12f;
-    [SerializeField] private float repathInterval = 0.75f; 
+    [SerializeField] private float repathInterval = 0.75f;
 
     [Header("Stuck Detection")]
-    [SerializeField] private float stuckVelocity = 0.08f;    
-    [SerializeField] private float stuckTimeToAccept = 0.6f;  
-    [SerializeField] private float progressEpsilon = 0.05f;  
+    [SerializeField] private float stuckVelocity = 0.08f;
+    [SerializeField] private float stuckTimeToAccept = 0.6f;
+    [SerializeField] private float progressEpsilon = 0.05f;
 
     private enum State { GoingToSite, Working }
     private State state = State.GoingToSite;
@@ -31,8 +30,6 @@ public class BuilderAgent : MonoBehaviour
     private NavMeshAgent agent;
     private Transform target;
     private BuildingConstruction construction;
-
-    private float workTimer = 0f;
 
     private float repathTimer = 0f;
     private float bestDistanceToTarget = float.MaxValue;
@@ -58,7 +55,6 @@ public class BuilderAgent : MonoBehaviour
         ForceDestinationAsCloseAsPossible();
 
         state = State.GoingToSite;
-        workTimer = 0f;
         repathTimer = 0f;
 
         bestDistanceToTarget = Vector3.Distance(transform.position, target.position);
@@ -72,7 +68,7 @@ public class BuilderAgent : MonoBehaviour
         agent.angularSpeed = agentAngularSpeed;
         agent.stoppingDistance = agentStoppingDistance;
 
-        agent.autoBraking = false;  
+        agent.autoBraking = false;
         agent.autoRepath = true;
         agent.obstacleAvoidanceType = ObstacleAvoidanceType.LowQualityObstacleAvoidance;
     }
@@ -151,7 +147,6 @@ public class BuilderAgent : MonoBehaviour
     {
         state = State.Working;
         agent.isStopped = true;
-        workTimer = 0f;
     }
 
     private void UpdateWorking()
@@ -163,14 +158,12 @@ public class BuilderAgent : MonoBehaviour
             agent.isStopped = false;
             state = State.GoingToSite;
 
-            workTimer = 0f;
             stuckTimer = 0f;
             bestDistanceToTarget = distToTarget;
 
             ForceDestinationAsCloseAsPossible();
             return;
         }
-        construction.NotifyBuilderWorking(Time.deltaTime);
     }
 
     private void FixSpawnToNavMesh()

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,6 +12,8 @@ public class BuildProgressTracker : MonoBehaviour
         InProgress = 1,
         Built = 2,
     }
+
+    public event Action<BuildType, BuildState> OnBuildStateChanged;
 
     private readonly Dictionary<BuildType, BuildState> states = new();
 
@@ -41,11 +44,13 @@ public class BuildProgressTracker : MonoBehaviour
     {
         if (type == BuildType.None) return;
         states[type] = BuildState.InProgress;
+        OnBuildStateChanged?.Invoke(type, BuildState.InProgress);
     }
 
     public void MarkBuilt(BuildType type)
     {
         if (type == BuildType.None) return;
         states[type] = BuildState.Built;
+        OnBuildStateChanged?.Invoke(type, BuildState.Built);
     }
 }

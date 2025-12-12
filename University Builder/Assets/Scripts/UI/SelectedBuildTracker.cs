@@ -19,8 +19,6 @@ public class SelectedBuildTracker : MonoBehaviour
 
     [Header("Building Execution")]
     [SerializeField] private List<BuildObjectEntry> buildObjects = new();
-    [SerializeField] private GameObject builderPrefab;
-    [SerializeField] private Transform builderSpawnPoint;
 
     public BuildType CurrentBuild { get; private set; } = BuildType.None;
 
@@ -52,6 +50,19 @@ public class SelectedBuildTracker : MonoBehaviour
             buildMap[entry.type] = entry;
             entry.buildingObject.SetActive(false);
         }
+    }
+
+    public bool TryGetSiteAndConstruction(BuildType type, out Transform site, out BuildingConstruction construction)
+    {
+        site = null;
+        construction = null;
+
+        if (!buildMap.TryGetValue(type, out var entry) || entry == null || entry.buildingObject == null)
+            return false;
+
+        site = entry.buildSitePoint != null ? entry.buildSitePoint : entry.buildingObject.transform;
+        construction = entry.buildingObject.GetComponent<BuildingConstruction>();
+        return construction != null;
     }
 
     private bool HasEnoughResources(BuildInfo buildInfo, Dictionary<ResourceType, int> playerResources)
@@ -138,26 +149,7 @@ public class SelectedBuildTracker : MonoBehaviour
         }
 
         buildingConstruction.SetBuildType(buildType);
-
         buildingConstruction.BeginConstruction();
-
-        if (builderPrefab == null || builderSpawnPoint == null)
-        {
-            Debug.LogWarning("SelectedBuildTracker: builderPrefab or builderSpawnPoint not assigned.");
-            return;
-        }
-
-        GameObject builderInstance = Instantiate(builderPrefab, builderSpawnPoint.position, builderSpawnPoint.rotation);
-
-        BuilderAgent builderAgent = builderInstance.GetComponent<BuilderAgent>();
-        if (builderAgent == null)
-        {
-            Debug.LogError("SelectedBuildTracker: BuilderAgent missing on builderPrefab.");
-            return;
-        }
-
-        Transform site = entry.buildSitePoint != null ? entry.buildSitePoint : buildingObject.transform;
-        builderAgent.Initialize(site, buildingConstruction);
     }
 
     public void ClearSelection()
@@ -183,7 +175,6 @@ public class SelectedBuildTracker : MonoBehaviour
         InfoText.SetActive(true);
 
         StringBuilder sb = new StringBuilder();
-
         sb.AppendLine($"<b><color=yellow>{buildInfo.Nickname}</color></b>");
 
         if (!string.IsNullOrWhiteSpace(buildInfo.Info))
@@ -192,35 +183,45 @@ public class SelectedBuildTracker : MonoBehaviour
             sb.AppendLine(buildInfo.Info);
         }
 
-        // ---------- PROVIDES ----------
-        if (!string.IsNullOrWhiteSpace(buildInfo.ProvidesInfo))
+        bool hasProvides =
+            !string.IsNullOrWhiteSpace(buildInfo.ProvidesInfo) ||
+            buildInfo.UnlocksBuilderSlots > 0;
+
+        if (hasProvides)
         {
             sb.AppendLine();
             sb.AppendLine("<b><color=orange>Provides</color></b>");
-            sb.AppendLine(buildInfo.ProvidesInfo);
+
+            if (!string.IsNullOrWhiteSpace(buildInfo.ProvidesInfo))
+                sb.AppendLine(buildInfo.ProvidesInfo);
+
+            if (buildInfo.UnlocksBuilderSlots > 0)
+                sb.AppendLine($"+{buildInfo.UnlocksBuilderSlots} Builder Slot");
         }
 
-        // ---------- PASSIVE INCOME ----------
+        sb.AppendLine();
+        sb.AppendLine("<b><color=orange>Build Time</color></b>");
+        sb.AppendLine($"{buildInfo.BuildTimeSeconds:0}s (1 worker = 1s/s)");
+
+        // PASSIVE INCOME
         if (buildInfo.PassiveIncome.Length > 0)
         {
             sb.AppendLine();
             sb.AppendLine("<b><color=orange>Passive Income</color></b>");
-
             foreach (var income in buildInfo.PassiveIncome)
                 sb.AppendLine($"+{income.amount} {income.type}");
         }
 
-        // ---------- UNLOCKS ----------
+        // UNLOCKS
         if (buildInfo.UnlocksProcessing.Length > 0)
         {
             sb.AppendLine();
             sb.AppendLine("<b><color=orange>Unlocks</color></b>");
-
             foreach (var unlock in buildInfo.UnlocksProcessing)
                 sb.AppendLine($"- {unlock} processing");
         }
 
-        // ---------- COST ----------
+        // COST
         sb.AppendLine();
         sb.AppendLine("<b><color=orange>Costs</color></b>");
 
@@ -233,7 +234,6 @@ public class SelectedBuildTracker : MonoBehaviour
 
         infoTextMesh.text = sb.ToString();
     }
-
 
     public bool HasSelection => CurrentBuild != BuildType.None;
 }

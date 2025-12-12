@@ -1,13 +1,8 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 public class BuildingConstruction : MonoBehaviour
 {
-    [Header("Timing")]
-    [SerializeField] private float maxBuildTime = 30f;
-    [SerializeField] private float builderWorkTime = 5f;
-
     [Header("Translucent Visual")]
     [Range(0.1f, 1f)]
     [SerializeField] private float constructionAlpha = 0.35f;
@@ -15,54 +10,59 @@ public class BuildingConstruction : MonoBehaviour
     public bool IsFinished { get; private set; }
     public bool IsBuilding { get; private set; }
 
-    private float builderWorkTimer;
-    private Coroutine fallbackRoutine;
-
     private readonly List<Material> cachedMaterials = new();
     private readonly Dictionary<Material, Color> originalColors = new();
 
     private BuildType buildType = BuildType.None;
+
+    private float requiredSeconds = 10f;
+    private float progressSeconds = 0f;
 
     public void SetBuildType(BuildType type)
     {
         buildType = type;
     }
 
+    public float GetRemainingSeconds()
+    {
+        if (!IsBuilding || IsFinished) return 0f;
+        return Mathf.Max(0f, requiredSeconds - progressSeconds);
+    }
+
+    public float GetRequiredSeconds() => requiredSeconds;
+    public float GetProgressSeconds() => progressSeconds;
+
     public void BeginConstruction()
     {
         if (IsBuilding || IsFinished)
             return;
 
+        // Pull required time from BuildDatabase
+        var info = BuildDatabase.Get(buildType);
+        requiredSeconds = info != null ? Mathf.Max(1f, info.BuildTimeSeconds) : 10f;
+
         CacheMaterials();
 
         IsBuilding = true;
         IsFinished = false;
-        builderWorkTimer = 0f;
 
+        progressSeconds = 0f;
         ApplyTranslucent(true);
-
-        if (fallbackRoutine != null)
-            StopCoroutine(fallbackRoutine);
-
-        fallbackRoutine = StartCoroutine(FallbackFinishRoutine());
     }
 
-    public void NotifyBuilderWorking(float deltaTime)
+    private void Update()
     {
         if (!IsBuilding || IsFinished)
             return;
 
-        builderWorkTimer += deltaTime;
+        // Your rule: each assigned worker contributes 1 second per second
+        int workers = WorkerManager.Instance != null ? WorkerManager.Instance.GetAssignedCount(buildType) : 0;
+        if (workers <= 0)
+            return; // paused until someone assigned
 
-        if (builderWorkTimer >= builderWorkTime)
-            FinishConstruction();
-    }
+        progressSeconds += workers * Time.deltaTime;
 
-    private IEnumerator FallbackFinishRoutine()
-    {
-        yield return new WaitForSeconds(maxBuildTime);
-
-        if (!IsFinished)
+        if (progressSeconds >= requiredSeconds)
             FinishConstruction();
     }
 
@@ -73,9 +73,6 @@ public class BuildingConstruction : MonoBehaviour
 
         IsFinished = true;
         IsBuilding = false;
-
-        if (fallbackRoutine != null)
-            StopCoroutine(fallbackRoutine);
 
         ApplyTranslucent(false);
 

@@ -10,12 +10,12 @@ public class WorkshopUI : MonoBehaviour
     [SerializeField] private List<GameObject> MainWorkshopPanels = new();
 
     [SerializeField] private GameObject BuildMenu;
+    [SerializeField] private GameObject AssignWorkerMenu;
     [SerializeField] private GameObject UpgradeToolMenu;
     [SerializeField] private GameObject RefineMaterialMenu;
     [SerializeField] private GameObject ConfirmButton;
 
     public bool IsOpen { get; private set; }
-
 
     private void Awake()
     {
@@ -36,7 +36,6 @@ public class WorkshopUI : MonoBehaviour
         IsOpen = false;
     }
 
-
     public void ToggleMenu()
     {
         if (IsOpen) CloseMenu();
@@ -53,6 +52,7 @@ public class WorkshopUI : MonoBehaviour
         }
 
         IsOpen = true;
+        RenderConfirmButton();
     }
 
     public void CloseMenu()
@@ -88,7 +88,14 @@ public class WorkshopUI : MonoBehaviour
             RefineMaterialsUI.Instance != null &&
             RefineMaterialsUI.Instance.HasSelection;
 
-        if (!toolMode && !buildMode && !refineMode)
+        // NEW: Assign Worker mode (only if menu is open + AssignWorkerUI has valid selection)
+        bool assignMode =
+            !toolMode && !buildMode && !refineMode &&
+            AssignWorkerMenu != null && AssignWorkerMenu.activeInHierarchy &&
+            AssignWorkerUI.Instance != null &&
+            AssignWorkerUI.Instance.HasValidSelection;
+
+        if (!toolMode && !buildMode && !refineMode && !assignMode)
         {
             ConfirmButton.SetActive(false);
             return;
@@ -100,16 +107,18 @@ public class WorkshopUI : MonoBehaviour
         if (buttonImage == null)
             return;
 
-        bool canAfford = false;
+        bool canConfirm = false;
 
         if (toolMode)
-            canAfford = ToolSelectUpgrade.Instance.CanAffordSelectedUpgrade();
+            canConfirm = ToolSelectUpgrade.Instance.CanAffordSelectedUpgrade();
         else if (buildMode)
-            canAfford = SelectedBuildTracker.Instance.CanAffordCurrentBuild();
+            canConfirm = SelectedBuildTracker.Instance.CanAffordCurrentBuild();
         else if (refineMode)
-            canAfford = RefineMaterialsUI.Instance.CanAffordSelectedRefine();
+            canConfirm = RefineMaterialsUI.Instance.CanAffordSelectedRefine();
+        else if (assignMode)
+            canConfirm = AssignWorkerUI.Instance.CanConfirmAssign();
 
-        buttonImage.color = canAfford ? Color.green : Color.gray;
+        buttonImage.color = canConfirm ? Color.green : Color.gray;
     }
 
     public void ClickConfirmButton()
@@ -137,8 +146,16 @@ public class WorkshopUI : MonoBehaviour
             RenderConfirmButton();
             return;
         }
-    }
 
+        // NEW: Assign Worker confirm
+        if (AssignWorkerMenu != null && AssignWorkerMenu.activeInHierarchy &&
+            AssignWorkerUI.Instance != null)
+        {
+            AssignWorkerUI.Instance.ConfirmAssign();
+            RenderConfirmButton();
+            return;
+        }
+    }
 
     public void HideConfirmButton()
     {
@@ -193,10 +210,33 @@ public class WorkshopUI : MonoBehaviour
     {
         if (RefineMaterialMenu != null)
             RefineMaterialMenu.SetActive(true);
+
+        RenderConfirmButton();
     }
+
     public void CloseRefineMaterialMenu()
     {
         if (RefineMaterialMenu != null)
             RefineMaterialMenu.SetActive(false);
+
+        RenderConfirmButton();
+    }
+
+    public void OpenAssignWorkerMenu()
+    {
+        if (AssignWorkerMenu != null)
+            AssignWorkerMenu.SetActive(true);
+
+        // refresh + show confirm if valid
+        AssignWorkerUI.Instance?.RefreshAll();
+        RenderConfirmButton();
+    }
+
+    public void CloseAssignWorkerMenu()
+    {
+        if (AssignWorkerMenu != null)
+            AssignWorkerMenu.SetActive(false);
+
+        RenderConfirmButton();
     }
 }

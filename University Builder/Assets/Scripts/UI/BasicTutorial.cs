@@ -121,7 +121,7 @@ public class BasicTutorial : MonoBehaviour
 
             case Step.Gather:
                 tutorialText.text =
-                    "<b>Tutorial</b>\nUse <color=yellow>Left Click</color> on a <color=yellow>Tree</color> or <color=yellow>Rock</color>.";
+                    "<b>Tutorial</b>\nUse <color=yellow>Left Click</color> on a <color=yellow>Tree</color> or <color=yellow>Rock</color> to gather <color=yellow>Materials</color>.";
 
                 tutorialTree?.EnableHighlight();
                 tutorialRock?.EnableHighlight();
@@ -129,7 +129,7 @@ public class BasicTutorial : MonoBehaviour
 
             case Step.UseWorkshop:
                 tutorialText.text =
-                    "<b>Tutorial</b>\nInteract with the <color=yellow>Workshop</color>.";
+                    "<b>Tutorial</b>\n<color=yellow>Left Click</color> to interact with the <color=yellow>Workshop</color>.";
 
                 tutorialWorkshop?.EnableHighlight();
                 break;
