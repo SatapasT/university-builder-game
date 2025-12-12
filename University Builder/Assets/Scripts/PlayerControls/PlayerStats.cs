@@ -87,4 +87,14 @@ public class PlayerStats : MonoBehaviour
         ToolInfo boots = GetCurrentToolInfo(ToolType.Boots);
         return boots != null && boots.MovementSpeedBonus > 0f ? boots.MovementSpeedBonus : 1f;
     }
+
+    public bool HasBuilding(BuildType type)
+    {
+        if (BuildProgressTracker.Instance == null)
+            return false;
+
+        return BuildProgressTracker.Instance.GetState(type)
+               == BuildProgressTracker.BuildState.Built;
+    }
+
 }

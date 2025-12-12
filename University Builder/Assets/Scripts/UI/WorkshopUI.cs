@@ -11,6 +11,7 @@ public class WorkshopUI : MonoBehaviour
 
     [SerializeField] private GameObject BuildMenu;
     [SerializeField] private GameObject UpgradeToolMenu;
+    [SerializeField] private GameObject RefineMaterialMenu;
     [SerializeField] private GameObject ConfirmButton;
 
     public bool IsOpen { get; private set; }
@@ -82,7 +83,12 @@ public class WorkshopUI : MonoBehaviour
             SelectedBuildTracker.Instance != null &&
             SelectedBuildTracker.Instance.HasSelection;
 
-        if (!toolMode && !buildMode)
+        bool refineMode =
+            !toolMode && !buildMode &&
+            RefineMaterialsUI.Instance != null &&
+            RefineMaterialsUI.Instance.HasSelection;
+
+        if (!toolMode && !buildMode && !refineMode)
         {
             ConfirmButton.SetActive(false);
             return;
@@ -97,13 +103,11 @@ public class WorkshopUI : MonoBehaviour
         bool canAfford = false;
 
         if (toolMode)
-        {
             canAfford = ToolSelectUpgrade.Instance.CanAffordSelectedUpgrade();
-        }
         else if (buildMode)
-        {
             canAfford = SelectedBuildTracker.Instance.CanAffordCurrentBuild();
-        }
+        else if (refineMode)
+            canAfford = RefineMaterialsUI.Instance.CanAffordSelectedRefine();
 
         buttonImage.color = canAfford ? Color.green : Color.gray;
     }
@@ -113,7 +117,7 @@ public class WorkshopUI : MonoBehaviour
         if (ToolSelectUpgrade.Instance != null &&
             ToolSelectUpgrade.Instance.HasSelection)
         {
-            bool upgraded = ToolSelectUpgrade.Instance.TryApplyUpgrade();
+            ToolSelectUpgrade.Instance.TryApplyUpgrade();
             RenderConfirmButton();
             return;
         }
@@ -123,8 +127,18 @@ public class WorkshopUI : MonoBehaviour
         {
             SelectedBuildTracker.Instance.TryStartConstruction();
             RenderConfirmButton();
+            return;
+        }
+
+        if (RefineMaterialsUI.Instance != null &&
+            RefineMaterialsUI.Instance.HasSelection)
+        {
+            RefineMaterialsUI.Instance.TryApplyRefine();
+            RenderConfirmButton();
+            return;
         }
     }
+
 
     public void HideConfirmButton()
     {
@@ -173,5 +187,16 @@ public class WorkshopUI : MonoBehaviour
             ToolSelectUpgrade.Instance.ClearSelection();
 
         RenderConfirmButton();
+    }
+
+    public void OpenRefineMaterialMenu()
+    {
+        if (RefineMaterialMenu != null)
+            RefineMaterialMenu.SetActive(true);
+    }
+    public void CloseRefineMaterialMenu()
+    {
+        if (RefineMaterialMenu != null)
+            RefineMaterialMenu.SetActive(false);
     }
 }

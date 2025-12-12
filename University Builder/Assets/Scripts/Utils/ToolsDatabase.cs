@@ -1,193 +1,286 @@
 using System.Collections.Generic;
 using UnityEngine;
+public class ToolInfo
+{
+    public string Name { get; }
+    public string Description { get; }
+    public ResourceAmount[] Costs { get; }
+
+    public int HarvestAmount { get; }
+    public float MovementSpeedBonus { get; }
+
+    public BuildType[] RequiredBuildings { get; }
+
+    public ToolInfo(
+        string name,
+        string description,
+        ResourceAmount[] costs,
+        int harvestAmount,
+        float movementSpeedBonus,
+        BuildType[] requiredBuildings)
+    {
+        Name = name;
+        Description = description;
+        Costs = costs;
+        HarvestAmount = harvestAmount;
+        MovementSpeedBonus = movementSpeedBonus;
+        RequiredBuildings = requiredBuildings ?? new BuildType[0];
+    }
+}
+
 
 public static class ToolsDatabase
 {
     private static readonly Dictionary<ToolType, List<ToolInfo>> data =
         new Dictionary<ToolType, List<ToolInfo>>
         {
-            // ---------------- AXE ----------------
+            // ================= AXE =================
             {
                 ToolType.Axe,
                 new List<ToolInfo>
                 {
+                    // L1 – BASIC
                     new ToolInfo(
                         "Rusted Hatchet",
-                        "A battered old hatchet.\nHarvests +1 wood per swing.",
-                        new ResourceAmount[] { },
-                        harvestAmount: 1
+                        "Harvests +1 wood.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 1),
+                            new ResourceAmount(ResourceType.Stone, 1)
+                        },
+                        1,
+                        1f,
+                        new BuildType[] { }
                     ),
+
+                    // L2 – GOLD
                     new ToolInfo(
                         "Bronze Axe",
-                        "A sturdier edge and better balance.\nHarvests +3 wood per swing.",
+                        "Harvests +3 wood.",
                         new[]
                         {
-                            new ResourceAmount(ResourceType.Wood, 10),
-                            new ResourceAmount(ResourceType.Stone, 5)
+                            new ResourceAmount(ResourceType.Wood, 2),
+                            new ResourceAmount(ResourceType.Stone, 2),
+                            new ResourceAmount(ResourceType.Gold, 1)
                         },
-                        harvestAmount: 3
+                        3,
+                        1f,
+                        new BuildType[] { }
                     ),
+
+                    // L3 – IRON (MOTTE)
                     new ToolInfo(
                         "Iron Axe",
-                        "A reliable iron blade for serious chopping.\nHarvests +6 wood per swing.",
+                        "Harvests +6 wood.",
                         new[]
                         {
-                            new ResourceAmount(ResourceType.Wood, 25),
-                            new ResourceAmount(ResourceType.Stone, 15)
+                            new ResourceAmount(ResourceType.Wood, 3),
+                            new ResourceAmount(ResourceType.Stone, 3),
+                            new ResourceAmount(ResourceType.Iron, 1)
                         },
-                        harvestAmount: 6
+                        6,
+                        1f,
+                        new[] { BuildType.Motte }
                     ),
+
+                    // L4 – PLANKS (GRAND HALL)
                     new ToolInfo(
-                        "Steel Woodsman Axe",
-                        "A hardened steel head that bites deep.\nHarvests +10 wood per swing.",
+                        "Steel Axe",
+                        "Harvests +10 wood.",
                         new[]
                         {
-                            new ResourceAmount(ResourceType.Wood, 45),
-                            new ResourceAmount(ResourceType.Stone, 30)
+                            new ResourceAmount(ResourceType.Wood, 4),
+                            new ResourceAmount(ResourceType.Stone, 4),
+                            new ResourceAmount(ResourceType.Planks, 1)
                         },
-                        harvestAmount: 10
+                        10,
+                        1f,
+                        new[] { BuildType.GrandHall }
                     ),
+
+                    // L5 – MASTERWORK (LIBRARY)
                     new ToolInfo(
                         "Masterwork Axe",
-                        "A master-forged axe fit for a guild champion.\nHarvests +15 wood per swing.",
+                        "Harvests +15 wood.",
                         new[]
                         {
-                            new ResourceAmount(ResourceType.Wood, 80),
-                            new ResourceAmount(ResourceType.Stone, 60)
+                            new ResourceAmount(ResourceType.Wood, 5),
+                            new ResourceAmount(ResourceType.Stone, 5),
+                            new ResourceAmount(ResourceType.Planks, 2),
+                            new ResourceAmount(ResourceType.Gold, 2)
                         },
-                        harvestAmount: 15
-                    ),
+                        15,
+                        1f,
+                        new[] { BuildType.Libary }
+                    )
                 }
             },
 
-            // ---------------- PICKAXE ----------------
+            // ================= PICKAXE =================
             {
                 ToolType.Pickaxe,
                 new List<ToolInfo>
                 {
                     new ToolInfo(
                         "Cracked Pick",
-                        "A dull, cracked pick.\nHarvests +1 stone per swing.",
-                        new ResourceAmount[] { },
-                        harvestAmount: 1
+                        "Harvests +1 stone.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 1),
+                            new ResourceAmount(ResourceType.Stone, 1)
+                        },
+                        1,
+                        1f,
+                        new BuildType[] { }
                     ),
+
                     new ToolInfo(
                         "Bronze Pickaxe",
-                        "Cuts cleaner into rock.\nHarvests +4 stone per swing.",
+                        "Harvests +3 stone.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 2),
+                            new ResourceAmount(ResourceType.Stone, 2),
+                            new ResourceAmount(ResourceType.Gold, 1)
+                        },
+                        3,
+                        1f,
+                        new BuildType[] { }
+                    ),
+
+                    new ToolInfo(
+                        "Iron Pickaxe",
+                        "Harvests +6 stone.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 3),
+                            new ResourceAmount(ResourceType.Stone, 3),
+                            new ResourceAmount(ResourceType.Iron, 1)
+                        },
+                        6,
+                        1f,
+                        new[] { BuildType.Motte }
+                    ),
+
+                    new ToolInfo(
+                        "Steel Pickaxe",
+                        "Harvests +10 stone.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 4),
+                            new ResourceAmount(ResourceType.Stone, 4),
+                            new ResourceAmount(ResourceType.Planks, 1)
+                        },
+                        10,
+                        1f,
+                        new[] { BuildType.GrandHall }
+                    ),
+
+                    new ToolInfo(
+                        "Masterwork Pickaxe",
+                        "Harvests +15 stone.",
                         new[]
                         {
                             new ResourceAmount(ResourceType.Wood, 5),
-                            new ResourceAmount(ResourceType.Stone, 10)
+                            new ResourceAmount(ResourceType.Stone, 5),
+                            new ResourceAmount(ResourceType.Planks, 2),
+                            new ResourceAmount(ResourceType.Gold, 2)
                         },
-                        harvestAmount: 4
-                    ),
-                    new ToolInfo(
-                        "Iron Pickaxe",
-                        "Stronger head, fewer bounces.\nHarvests +8 stone per swing.",
-                        new[]
-                        {
-                            new ResourceAmount(ResourceType.Wood, 15),
-                            new ResourceAmount(ResourceType.Stone, 25)
-                        },
-                        harvestAmount: 8
-                    ),
-                    new ToolInfo(
-                        "Steel Miner’s Pick",
-                        "Built for deep veins and hard rock.\nHarvests +13 stone per swing.",
-                        new[]
-                        {
-                            new ResourceAmount(ResourceType.Wood, 25),
-                            new ResourceAmount(ResourceType.Stone, 45)
-                        },
-                        harvestAmount: 13
-                    ),
-                    new ToolInfo(
-                        "Masterwork Pickaxe",
-                        "Perfectly weighted and wickedly sharp.\nHarvests +20 stone per swing.",
-                        new[]
-                        {
-                            new ResourceAmount(ResourceType.Wood, 40),
-                            new ResourceAmount(ResourceType.Stone, 80)
-                        },
-                        harvestAmount: 20
-                    ),
+                        15,
+                        1f,
+                        new[] { BuildType.Libary }
+                    )
                 }
             },
 
-            // ---------------- BOOTS ----------------
+            // ================= BOOTS =================
             {
                 ToolType.Boots,
                 new List<ToolInfo>
                 {
                     new ToolInfo(
                         "Bare Feet",
-                        "No boots.\n+1x movement speed.",
-                        new ResourceAmount[] { },
-                        movementSpeedBonus: 1.0f
+                        "1x movement speed.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 1),
+                            new ResourceAmount(ResourceType.Stone, 1)
+                        },
+                        0,
+                        1f,
+                        new BuildType[] { }
                     ),
+
                     new ToolInfo(
                         "Leather Boots",
-                        "Basic leather boots.\n+2x movement speed.",
+                        "2x movement speed.",
                         new[]
                         {
-                            new ResourceAmount(ResourceType.Wood, 10),
-                            new ResourceAmount(ResourceType.Stone, 5)
+                            new ResourceAmount(ResourceType.Wood, 2),
+                            new ResourceAmount(ResourceType.Stone, 2),
+                            new ResourceAmount(ResourceType.Gold, 1)
                         },
-                        movementSpeedBonus: 2.0f
+                        0,
+                        2f,
+                        new BuildType[] { }
                     ),
+
                     new ToolInfo(
-                        "Reinforced Leather Boots",
-                        "Stronger soles and tighter fit.\n+3x movement speed.",
+                        "Iron-Toed Boots",
+                        "3x movement speed.",
                         new[]
                         {
-                            new ResourceAmount(ResourceType.Wood, 20),
-                            new ResourceAmount(ResourceType.Stone, 12)
+                            new ResourceAmount(ResourceType.Wood, 3),
+                            new ResourceAmount(ResourceType.Stone, 3),
+                            new ResourceAmount(ResourceType.Iron, 1)
                         },
-                        movementSpeedBonus: 3.0f
+                        0,
+                        3f,
+                        new[] { BuildType.Motte }
                     ),
+
                     new ToolInfo(
                         "Steel-Plated Boots",
-                        "Balanced for speed and protection.\n+4x movement speed.",
+                        "4x movement speed.",
                         new[]
                         {
-                            new ResourceAmount(ResourceType.Wood, 35),
-                            new ResourceAmount(ResourceType.Stone, 25)
+                            new ResourceAmount(ResourceType.Wood, 4),
+                            new ResourceAmount(ResourceType.Stone, 4),
+                            new ResourceAmount(ResourceType.Planks, 1)
                         },
-                        movementSpeedBonus: 4.0f
+                        0,
+                        4f,
+                        new[] { BuildType.GrandHall }
                     ),
+
                     new ToolInfo(
                         "Master Courier Boots",
-                        "Legendary boots worn by royal messengers.\n+5x movement speed.",
+                        "5x movement speed.",
                         new[]
                         {
-                            new ResourceAmount(ResourceType.Wood, 60),
-                            new ResourceAmount(ResourceType.Stone, 45)
+                            new ResourceAmount(ResourceType.Wood, 5),
+                            new ResourceAmount(ResourceType.Stone, 5),
+                            new ResourceAmount(ResourceType.Planks, 2),
+                            new ResourceAmount(ResourceType.Gold, 2)
                         },
-                        movementSpeedBonus: 5.0f
-                    ),
+                        0,
+                        5f,
+                        new[] { BuildType.Libary }
+                    )
                 }
             }
         };
 
     public static ToolInfo Get(ToolType type, int level)
     {
-        if (!data.TryGetValue(type, out var levels))
-        {
-            Debug.LogWarning($"No tools defined for type {type}");
-            return null;
-        }
-
-        if (level < 0 || level >= levels.Count)
-            return null;
-
+        if (!data.TryGetValue(type, out var levels)) return null;
+        if (level < 0 || level >= levels.Count) return null;
         return levels[level];
     }
 
     public static int GetMaxLevel(ToolType type)
     {
-        if (!data.TryGetValue(type, out var levels))
-            return 0;
-
+        if (!data.TryGetValue(type, out var levels)) return 0;
         return levels.Count - 1;
     }
 }

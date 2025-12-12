@@ -17,107 +17,178 @@ public class BuildInfo
 {
     public string Nickname { get; }
     public string Info { get; }
+    public string ProvidesInfo { get; }
+
     public ResourceAmount[] Costs { get; }
 
-    public BuildInfo(string nickname, string info, ResourceAmount[] costs)
+    public BuildType[] RequiredBuildings { get; }
+    public ResourceAmount[] PassiveIncome { get; }
+    public ResourceType[] UnlocksProcessing { get; }
+
+    public BuildInfo(
+        string nickname,
+        string info,
+        string providesInfo,
+        ResourceAmount[] costs,
+        BuildType[] requiredBuildings = null,
+        ResourceAmount[] passiveIncome = null,
+        ResourceType[] unlocksProcessing = null)
     {
         Nickname = nickname;
         Info = info;
+        ProvidesInfo = providesInfo;
+
         Costs = costs;
+        RequiredBuildings = requiredBuildings ?? new BuildType[0];
+        PassiveIncome = passiveIncome ?? new ResourceAmount[0];
+        UnlocksProcessing = unlocksProcessing ?? new ResourceType[0];
     }
 }
+
+
 
 public static class BuildDatabase
 {
     private static readonly Dictionary<BuildType, BuildInfo> data =
         new Dictionary<BuildType, BuildInfo>
         {
-            // ---------------- CASTLE ----------------
+            // ================= CASTLE =================
             {
                 BuildType.Castle,
                 new BuildInfo(
                     "Durham Castle",
-                    "A fortified Norman stronghold overlooking the River Wear. " +
-                    "Seat of power and military control within the region.",
+                    "The fortified seat of power overlooking the River Wear.",
+                    "Generates Gold over time.",
                     new[]
                     {
                         new ResourceAmount(ResourceType.Wood, 5),
                         new ResourceAmount(ResourceType.Stone, 5)
+                    },
+                    passiveIncome: new[]
+                    {
+                        new ResourceAmount(ResourceType.Gold, 1)
                     }
                 )
             },
 
-            // ---------------- BRIDGE ----------------
+            // ================= BRIDGE =================
             {
                 BuildType.Bridge,
                 new BuildInfo(
                     "Elvet Bridge",
-                    "A sturdy stone bridge spanning the River Wear, enabling trade, travel, " +
-                    "and reliable passage into the city.",
+                    "A stone bridge enabling trade and travel.",
+                    "Generates Gold over time.",
                     new[]
                     {
                         new ResourceAmount(ResourceType.Wood, 4),
                         new ResourceAmount(ResourceType.Stone, 6)
-                    }
-                )
-            },
-
-            // ---------------- COURTYARD ----------------
-            {
-                BuildType.Courtyard,
-                new BuildInfo(
-                    "Inner Courtyard",
-                    "The central open space of the castle complex. " +
-                    "Used for training, gatherings, and daily life within the walls.",
-                    new[]
+                    },
+                    passiveIncome: new[]
                     {
-                        new ResourceAmount(ResourceType.Wood, 3),
-                        new ResourceAmount(ResourceType.Stone, 4)
+                        new ResourceAmount(ResourceType.Gold, 1)
                     }
                 )
             },
 
-            // ---------------- MOTTE ----------------
+            // ================= MOTTE =================
             {
                 BuildType.Motte,
                 new BuildInfo(
                     "Castle Motte",
-                    "A raised earthen mound forming the oldest part of the fortress. " +
-                    "Provides height, visibility, and a strong defensive advantage.",
+                    "The original defensive mound of the fortress.",
+                    "Unlocks iron processing.",
                     new[]
                     {
                         new ResourceAmount(ResourceType.Wood, 2),
-                        new ResourceAmount(ResourceType.Stone, 3)
+                        new ResourceAmount(ResourceType.Stone, 3),
+                        new ResourceAmount(ResourceType.Gold, 1)
+                    },
+                    passiveIncome: new[]
+                    {
+                        new ResourceAmount(ResourceType.Gold, 1)
+                    },
+                    requiredBuildings: new[]
+                    {
+                        BuildType.Castle
+                    },
+                    unlocksProcessing: new[]
+                    {
+                        ResourceType.Iron
                     }
                 )
             },
 
-            // ---------------- GRAND HALL ----------------
+            // ================= COURTYARD =================
+            {
+                BuildType.Courtyard,
+                new BuildInfo(
+                    "Inner Courtyard",
+                    "A central space for daily life and training.",
+                    "Unlocks plank processing.",
+                    new[]
+                    {
+                        new ResourceAmount(ResourceType.Wood, 3),
+                        new ResourceAmount(ResourceType.Stone, 4),
+                        new ResourceAmount(ResourceType.Gold, 1),
+                        new ResourceAmount(ResourceType.Iron, 1)
+                    },
+                    passiveIncome: new[]
+                    {
+                        new ResourceAmount(ResourceType.Gold, 1)
+                    },
+                    requiredBuildings: new[]
+                    {
+                        BuildType.Motte
+                    },
+                    unlocksProcessing: new[]
+                    {
+                        ResourceType.Planks
+                    }
+                )
+            },
+
+            // ================= GRAND HALL =================
             {
                 BuildType.GrandHall,
                 new BuildInfo(
                     "Grand Hall",
-                    "The heart of castle life. A place for feasts, councils, and ceremonies, " +
-                    "where nobles and officials gather under one roof.",
+                    "The administrative and ceremonial heart of the castle.",
+                    "Unlocks advanced equipment upgrades.",
                     new[]
                     {
-                        new ResourceAmount(ResourceType.Wood, 4),
-                        new ResourceAmount(ResourceType.Stone, 4)
+                        new ResourceAmount(ResourceType.Stone, 4),
+                        new ResourceAmount(ResourceType.Gold, 2),
+                        new ResourceAmount(ResourceType.Iron, 1),
+                        new ResourceAmount(ResourceType.Planks, 1)
+                    },
+                    passiveIncome: new[]
+                    {
+                        new ResourceAmount(ResourceType.Gold, 1)
+                    },
+                    requiredBuildings: new[]
+                    {
+                        BuildType.Courtyard
                     }
                 )
             },
 
-            // ---------------- LIBRARY ----------------
+            // ================= LIBRARY =================
             {
                 BuildType.Libary,
                 new BuildInfo(
                     "Monastic Library",
-                    "A quiet hall of manuscripts and knowledge, maintained by scribes and clerics. " +
-                    "Preserves learning, records, and history.",
+                    "A place of preserved knowledge and mastery.",
+                    "Unlocks masterwork tools.",
                     new[]
                     {
-                        new ResourceAmount(ResourceType.Wood, 3),
-                        new ResourceAmount(ResourceType.Stone, 2)
+                        new ResourceAmount(ResourceType.Stone, 6),
+                        new ResourceAmount(ResourceType.Gold, 3),
+                        new ResourceAmount(ResourceType.Iron, 2),
+                        new ResourceAmount(ResourceType.Planks, 2)
+                    },
+                    requiredBuildings: new[]
+                    {
+                        BuildType.GrandHall
                     }
                 )
             }

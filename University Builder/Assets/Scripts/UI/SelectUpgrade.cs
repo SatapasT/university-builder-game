@@ -15,7 +15,6 @@ public class ToolSelectUpgrade : MonoBehaviour
 
     public bool HasSelection => CurrentTool != ToolType.None;
 
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -37,25 +36,19 @@ public class ToolSelectUpgrade : MonoBehaviour
     public void SelectPickaxe() => SelectTool(ToolType.Pickaxe);
     public void SelectBoots() => SelectTool(ToolType.Boots);
 
-    // --------- SELECTION + INFO DISPLAY ---------
+    // ---------------- SELECTION + INFO DISPLAY ----------------
 
     private void SelectTool(ToolType toolType)
     {
         CurrentTool = toolType;
 
-        if (toolInfoText == null)
+        if (toolInfoText == null || PlayerStats.Instance == null)
             return;
-
-        if (PlayerStats.Instance == null)
-        {
-            Debug.LogError("PlayerStats.Instance is null – attach PlayerStats to the Player.");
-            return;
-        }
 
         int level = PlayerStats.Instance.GetToolLevel(toolType);
 
         ToolInfo current = ToolsDatabase.Get(toolType, level);
-        ToolInfo next = PlayerStats.Instance.GetNextUpgrade(toolType); // may be null
+        ToolInfo next = PlayerStats.Instance.GetNextUpgrade(toolType);
 
         if (current == null)
             return;
@@ -72,42 +65,32 @@ public class ToolSelectUpgrade : MonoBehaviour
         builder.AppendLine();
 
         // ---------- DESCRIPTION ----------
-        if (next != null && !string.IsNullOrWhiteSpace(next.Description))
+        ToolInfo shown = next ?? current;
+        if (!string.IsNullOrWhiteSpace(shown.Description))
         {
-            builder.AppendLine(next.Description);
-            builder.AppendLine();
-        }
-        else if (!string.IsNullOrWhiteSpace(current.Description))
-        {
-            builder.AppendLine(current.Description);
+            builder.AppendLine(shown.Description);
             builder.AppendLine();
         }
 
-        // ---------- STATS (current -> next) ----------
+        // ---------- STATS ----------
         builder.AppendLine("<b><color=orange>Stats</color></b>");
 
-        int currentHarvest = current.HarvestAmount;
-        int nextHarvest = next != null ? next.HarvestAmount : currentHarvest;
-
-        float currentSpeed = current.MovementSpeedBonus <= 0f ? 1f : current.MovementSpeedBonus;
-        float nextSpeed = next != null && next.MovementSpeedBonus > 0f
-                                ? next.MovementSpeedBonus
-                                : currentSpeed;
-
-        if (currentHarvest > 0 || nextHarvest > 0)
+        // HARVEST (Axe & Pickaxe only)
+        if (toolType == ToolType.Axe || toolType == ToolType.Pickaxe)
         {
-            if (next != null && nextHarvest != currentHarvest)
-                builder.AppendLine($"- Harvest: +{currentHarvest}  >  +{nextHarvest}");
+            if (next != null && next.HarvestAmount != current.HarvestAmount)
+                builder.AppendLine($"- Harvest: +{current.HarvestAmount} → +{next.HarvestAmount}");
             else
-                builder.AppendLine($"- Harvest: +{currentHarvest}");
+                builder.AppendLine($"- Harvest: +{current.HarvestAmount}");
         }
 
-        if (currentSpeed > 0f || nextSpeed > 0f)
+        // MOVE SPEED (Boots only)
+        if (toolType == ToolType.Boots)
         {
-            if (next != null && Mathf.Abs(nextSpeed - currentSpeed) > 0.001f)
-                builder.AppendLine($"- Move Speed: x{currentSpeed:0.00}  >  x{nextSpeed:0.00}");
+            if (next != null && Mathf.Abs(next.MovementSpeedBonus - current.MovementSpeedBonus) > 0.01f)
+                builder.AppendLine($"- Move Speed: x{current.MovementSpeedBonus} → x{next.MovementSpeedBonus}");
             else
-                builder.AppendLine($"- Move Speed: x{currentSpeed:0.00}");
+                builder.AppendLine($"- Move Speed: x{current.MovementSpeedBonus}");
         }
 
         builder.AppendLine();
@@ -121,51 +104,47 @@ public class ToolSelectUpgrade : MonoBehaviour
         }
         else
         {
-            Dictionary<ResourceType, int> playerResources =
-                ResourcesManager.Instance != null
-                    ? ResourcesManager.Instance.GetAllResources()
-                    : null;
-
-            foreach (ResourceAmount cost in next.UpgradeCosts)
+            var resources = ResourcesManager.Instance.GetAllResources();
+            foreach (var cost in next.Costs)
             {
-                int currentAmount = 0;
-                playerResources?.TryGetValue(cost.type, out currentAmount);
-                builder.AppendLine($"- {currentAmount}/{cost.amount} {cost.type}");
+                resources.TryGetValue(cost.type, out int have);
+                builder.AppendLine($"- {have}/{cost.amount} {cost.type}");
+            }
+        }
+
+        // ---------- REQUIRED BUILDINGS ----------
+        if (next != null && next.RequiredBuildings.Length > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("<b><color=orange>Requires</color></b>");
+
+            foreach (BuildType req in next.RequiredBuildings)
+            {
+                bool has = PlayerStats.Instance.HasBuilding(req);
+                string color = has ? "green" : "red";
+                builder.AppendLine($"- <color={color}>{req}</color>");
             }
         }
 
         toolInfoText.text = builder.ToString();
-
-        // Refresh confirm button immediately
-        if (WorkshopUI.Instance != null)
-        {
-            WorkshopUI.Instance.RenderConfirmButton();
-        }
+        WorkshopUI.Instance?.RenderConfirmButton();
     }
 
-    // --------- CONFIRM BUTTON HELPERS ---------
+    // ---------------- CONFIRM BUTTON ----------------
 
     public bool CanAffordSelectedUpgrade()
     {
-        if (!HasSelection ||
-            PlayerStats.Instance == null ||
-            ResourcesManager.Instance == null)
+        if (!HasSelection || PlayerStats.Instance == null || ResourcesManager.Instance == null)
             return false;
 
         ToolInfo next = PlayerStats.Instance.GetNextUpgrade(CurrentTool);
-        if (next == null)
-            return false; // max level
+        if (next == null) return false;
 
-        Dictionary<ResourceType, int> playerResources =
-            ResourcesManager.Instance.GetAllResources();
-
-        foreach (ResourceAmount cost in next.UpgradeCosts)
+        var resources = ResourcesManager.Instance.GetAllResources();
+        foreach (var cost in next.Costs)
         {
-            if (!playerResources.TryGetValue(cost.type, out int have) ||
-                have < cost.amount)
-            {
+            if (!resources.TryGetValue(cost.type, out int have) || have < cost.amount)
                 return false;
-            }
         }
 
         return true;
@@ -173,38 +152,14 @@ public class ToolSelectUpgrade : MonoBehaviour
 
     public bool TryApplyUpgrade()
     {
-        if (!HasSelection ||
-            PlayerStats.Instance == null ||
-            ResourcesManager.Instance == null)
+        if (!CanAffordSelectedUpgrade())
             return false;
 
         ToolInfo next = PlayerStats.Instance.GetNextUpgrade(CurrentTool);
-        if (next == null)
-            return false; // max level
-
-        Dictionary<ResourceType, int> playerResources =
-            ResourcesManager.Instance.GetAllResources();
-
-        // Check again (defensive)
-        foreach (ResourceAmount cost in next.UpgradeCosts)
-        {
-            if (!playerResources.TryGetValue(cost.type, out int have) ||
-                have < cost.amount)
-            {
-                return false;
-            }
-        }
-
-        // Deduct cost
-        foreach (ResourceAmount cost in next.UpgradeCosts)
-        {
+        foreach (var cost in next.Costs)
             ResourcesManager.Instance.DeductResources(cost.type, cost.amount);
-        }
 
-        // Bump level on the player
         PlayerStats.Instance.UpgradeToolLevel(CurrentTool);
-
-        // Refresh info + confirm button
         SelectTool(CurrentTool);
         return true;
     }
@@ -212,11 +167,7 @@ public class ToolSelectUpgrade : MonoBehaviour
     public void ClearSelection()
     {
         CurrentTool = ToolType.None;
-
-        if (toolInfoText != null)
-        {
-            toolInfoText.text = string.Empty;
-            toolInfoTextObject.SetActive(false);
-        }
+        toolInfoText.text = "";
+        toolInfoTextObject.SetActive(false);
     }
 }

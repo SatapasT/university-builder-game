@@ -178,26 +178,13 @@ public class SelectedBuildTracker : MonoBehaviour
         if (infoTextMesh == null) return;
 
         BuildInfo buildInfo = BuildDatabase.Get(buildType);
-        if (buildInfo == null)
-        {
-            infoTextMesh.text = string.Empty;
-            if (InfoText != null) InfoText.SetActive(false);
-            return;
-        }
+        if (buildInfo == null) return;
 
-        if (InfoText != null) InfoText.SetActive(true);
+        InfoText.SetActive(true);
 
         StringBuilder sb = new StringBuilder();
-        sb.AppendLine($"<b><color=yellow>{buildInfo.Nickname}</color></b>");
 
-        if (BuildProgressTracker.Instance != null)
-        {
-            var st = BuildProgressTracker.Instance.GetState(buildType);
-            if (st == BuildProgressTracker.BuildState.Built)
-                sb.AppendLine("<color=green><b>BUILT</b></color>");
-            else if (st == BuildProgressTracker.BuildState.InProgress)
-                sb.AppendLine("<color=orange><b>IN PROGRESS</b></color>");
-        }
+        sb.AppendLine($"<b><color=yellow>{buildInfo.Nickname}</color></b>");
 
         if (!string.IsNullOrWhiteSpace(buildInfo.Info))
         {
@@ -205,22 +192,48 @@ public class SelectedBuildTracker : MonoBehaviour
             sb.AppendLine(buildInfo.Info);
         }
 
-        Dictionary<ResourceType, int> playerResources =
-            ResourcesManager.Instance != null ? ResourcesManager.Instance.GetAllResources() : null;
+        // ---------- PROVIDES ----------
+        if (!string.IsNullOrWhiteSpace(buildInfo.ProvidesInfo))
+        {
+            sb.AppendLine();
+            sb.AppendLine("<b><color=orange>Provides</color></b>");
+            sb.AppendLine(buildInfo.ProvidesInfo);
+        }
 
+        // ---------- PASSIVE INCOME ----------
+        if (buildInfo.PassiveIncome.Length > 0)
+        {
+            sb.AppendLine();
+            sb.AppendLine("<b><color=orange>Passive Income</color></b>");
+
+            foreach (var income in buildInfo.PassiveIncome)
+                sb.AppendLine($"+{income.amount} {income.type}");
+        }
+
+        // ---------- UNLOCKS ----------
+        if (buildInfo.UnlocksProcessing.Length > 0)
+        {
+            sb.AppendLine();
+            sb.AppendLine("<b><color=orange>Unlocks</color></b>");
+
+            foreach (var unlock in buildInfo.UnlocksProcessing)
+                sb.AppendLine($"- {unlock} processing");
+        }
+
+        // ---------- COST ----------
         sb.AppendLine();
         sb.AppendLine("<b><color=orange>Costs</color></b>");
 
-        foreach (ResourceAmount resourceAmount in buildInfo.Costs)
+        var resources = ResourcesManager.Instance.GetAllResources();
+        foreach (var cost in buildInfo.Costs)
         {
-            int currentAmount = 0;
-            playerResources?.TryGetValue(resourceAmount.type, out currentAmount);
-
-            sb.AppendLine($"- {currentAmount}/{resourceAmount.amount} {resourceAmount.type}");
+            resources.TryGetValue(cost.type, out int have);
+            sb.AppendLine($"- {have}/{cost.amount} {cost.type}");
         }
 
         infoTextMesh.text = sb.ToString();
     }
+
 
     public bool HasSelection => CurrentBuild != BuildType.None;
 }
