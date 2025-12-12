@@ -3,57 +3,100 @@ using UnityEngine.AI;
 
 public class BuilderAgent : MonoBehaviour
 {
-    [SerializeField] private float workRadius = 10f;         
-    [SerializeField] private float arrivalThreshold = 0.3f; 
-    [SerializeField] private float movePause = 0.3f;       
+    [Header("Arrival / Work")]
+    [SerializeField] private float arriveDistance = 1.5f;
+    [SerializeField] private float maxWorkDistance = 4.0f;
+    [SerializeField] private float workSeconds = 5f;
 
-    private enum BuilderState { GoingToSite, Working }
-    private BuilderState state = BuilderState.GoingToSite;
+    [Header("Movement Feel (snappy)")]
+    [SerializeField] private bool overrideAgentSettings = true;
+    [SerializeField] private float agentSpeed = 6.5f;
+    [SerializeField] private float agentAcceleration = 40f;
+    [SerializeField] private float agentAngularSpeed = 720f;
+    [SerializeField] private float agentStoppingDistance = 0.1f;
 
-    private NavMeshAgent navAgent;
-    private Transform targetTransform;
-    private BuildingConstruction targetConstruction;
-    private float pauseTimer = 0f;
+    [Header("NavMesh Robustness")]
+    [SerializeField] private float spawnSampleRadius = 8f;
+    [SerializeField] private float targetSampleRadius = 12f;
+    [SerializeField] private float repathInterval = 0.75f; 
 
-    public void Initialize(Transform target, BuildingConstruction construction)
+    [Header("Stuck Detection")]
+    [SerializeField] private float stuckVelocity = 0.08f;    
+    [SerializeField] private float stuckTimeToAccept = 0.6f;  
+    [SerializeField] private float progressEpsilon = 0.05f;  
+
+    private enum State { GoingToSite, Working }
+    private State state = State.GoingToSite;
+
+    private NavMeshAgent agent;
+    private Transform target;
+    private BuildingConstruction construction;
+
+    private float workTimer = 0f;
+
+    private float repathTimer = 0f;
+    private float bestDistanceToTarget = float.MaxValue;
+    private float stuckTimer = 0f;
+
+    public void Initialize(Transform targetTransform, BuildingConstruction targetConstruction)
     {
-        targetTransform = target;
-        targetConstruction = construction;
+        target = targetTransform;
+        construction = targetConstruction;
 
-        navAgent = GetComponent<NavMeshAgent>();
-        if (navAgent == null || targetTransform == null || targetConstruction == null)
+        agent = GetComponent<NavMeshAgent>();
+        if (agent == null || target == null || construction == null)
         {
-            Debug.LogError("BuilderAgent: Initialize called with missing components.");
+            Debug.LogError("BuilderAgent: Initialize missing components/refs.");
             enabled = false;
             return;
         }
 
-        navAgent.stoppingDistance = 0f;
-        navAgent.autoBraking = false;
-        navAgent.isStopped = false;
+        if (overrideAgentSettings)
+            ApplySnappySettings();
 
-        navAgent.SetDestination(targetTransform.position);
-        state = BuilderState.GoingToSite;
+        FixSpawnToNavMesh();
+        ForceDestinationAsCloseAsPossible();
+
+        state = State.GoingToSite;
+        workTimer = 0f;
+        repathTimer = 0f;
+
+        bestDistanceToTarget = Vector3.Distance(transform.position, target.position);
+        stuckTimer = 0f;
+    }
+
+    private void ApplySnappySettings()
+    {
+        agent.speed = agentSpeed;
+        agent.acceleration = agentAcceleration;
+        agent.angularSpeed = agentAngularSpeed;
+        agent.stoppingDistance = agentStoppingDistance;
+
+        agent.autoBraking = false;  
+        agent.autoRepath = true;
+        agent.obstacleAvoidanceType = ObstacleAvoidanceType.LowQualityObstacleAvoidance;
     }
 
     private void Update()
     {
-        if (navAgent == null || targetConstruction == null)
+        if (agent == null || target == null || construction == null)
             return;
 
-        if (targetConstruction.IsFinished)
+        if (construction.IsFinished)
         {
             Destroy(gameObject);
             return;
         }
 
+        if (!agent.isOnNavMesh)
+            FixSpawnToNavMesh();
+
         switch (state)
         {
-            case BuilderState.GoingToSite:
+            case State.GoingToSite:
                 UpdateGoingToSite();
                 break;
-
-            case BuilderState.Working:
+            case State.Working:
                 UpdateWorking();
                 break;
         }
@@ -61,49 +104,106 @@ public class BuilderAgent : MonoBehaviour
 
     private void UpdateGoingToSite()
     {
-        if (navAgent.pathPending)
-            return;
-
-        if (navAgent.remainingDistance <= arrivalThreshold)
+        repathTimer -= Time.deltaTime;
+        if (repathTimer <= 0f)
         {
-            state = BuilderState.Working;
-            pauseTimer = 0f;
-            SetNewWorkDestination();
+            repathTimer = repathInterval;
+            ForceDestinationAsCloseAsPossible();
         }
+
+        float distToTarget = Vector3.Distance(transform.position, target.position);
+
+        if (distToTarget <= arriveDistance)
+        {
+            BeginWork();
+            return;
+        }
+
+        if (distToTarget + progressEpsilon < bestDistanceToTarget)
+        {
+            bestDistanceToTarget = distToTarget;
+            stuckTimer = 0f;
+        }
+        else
+        {
+            if (agent.velocity.magnitude <= stuckVelocity)
+                stuckTimer += Time.deltaTime;
+            else
+                stuckTimer = 0f;
+        }
+
+        bool pathBad = agent.pathStatus == NavMeshPathStatus.PathPartial || agent.pathStatus == NavMeshPathStatus.PathInvalid;
+
+        if (pathBad && distToTarget <= maxWorkDistance)
+        {
+            BeginWork();
+            return;
+        }
+
+        if (stuckTimer >= stuckTimeToAccept && distToTarget <= maxWorkDistance)
+        {
+            BeginWork();
+            return;
+        }
+    }
+
+    private void BeginWork()
+    {
+        state = State.Working;
+        agent.isStopped = true;
+        workTimer = 0f;
     }
 
     private void UpdateWorking()
     {
-        if (navAgent.pathPending)
-            return;
+        float distToTarget = Vector3.Distance(transform.position, target.position);
 
-        if (pauseTimer > 0f)
+        if (distToTarget > maxWorkDistance)
         {
-            pauseTimer -= Time.deltaTime;
+            agent.isStopped = false;
+            state = State.GoingToSite;
+
+            workTimer = 0f;
+            stuckTimer = 0f;
+            bestDistanceToTarget = distToTarget;
+
+            ForceDestinationAsCloseAsPossible();
             return;
         }
+        construction.NotifyBuilderWorking(Time.deltaTime);
+    }
 
-        if (navAgent.remainingDistance <= arrivalThreshold)
+    private void FixSpawnToNavMesh()
+    {
+        if (agent == null) return;
+
+        if (agent.isOnNavMesh)
+            return;
+
+        if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, spawnSampleRadius, NavMesh.AllAreas))
         {
-            SetNewWorkDestination();
+            agent.Warp(hit.position);
+        }
+        else
+        {
+            Debug.LogError("BuilderAgent: Spawn is too far from NavMesh. Move AI spawn point closer to the baked NavMesh.");
         }
     }
 
-    private void SetNewWorkDestination()
+    private void ForceDestinationAsCloseAsPossible()
     {
-        if (targetTransform == null)
-            return;
+        if (agent == null || target == null) return;
 
-        pauseTimer = movePause;
-
-        Vector3 randomDirection = Random.insideUnitSphere * workRadius;
-        randomDirection.y = 0f;
-
-        Vector3 rawDestination = targetTransform.position + randomDirection;
-
-        if (NavMesh.SamplePosition(rawDestination, out NavMeshHit hit, 1.5f, NavMesh.AllAreas))
+        if (!NavMesh.SamplePosition(target.position, out NavMeshHit nearTarget, targetSampleRadius, NavMesh.AllAreas))
         {
-            navAgent.SetDestination(hit.position);
+            Vector3 fallback = transform.position + (target.position - transform.position).normalized * 4f;
+            if (NavMesh.SamplePosition(fallback, out NavMeshHit nearFallback, targetSampleRadius, NavMesh.AllAreas))
+                agent.SetDestination(nearFallback.position);
+
+            return;
         }
+
+        agent.isStopped = false;
+        agent.SetDestination(nearTarget.position);
     }
 }

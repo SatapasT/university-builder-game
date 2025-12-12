@@ -1,63 +1,139 @@
-using System.Collections;
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 public class BuildingConstruction : MonoBehaviour
 {
-    [SerializeField] private float buildTimeSeconds = 30f;
+    [Header("Timing")]
+    [SerializeField] private float maxBuildTime = 30f;
+    [SerializeField] private float builderWorkTime = 5f;
 
-    private MeshRenderer meshRenderer;
-    private Material originalMaterial;
-    private Color originalColor;
-    private bool isBuilding = false;
+    [Header("Translucent Visual")]
+    [Range(0.1f, 1f)]
+    [SerializeField] private float constructionAlpha = 0.35f;
 
-    public bool IsBuilding => isBuilding;
     public bool IsFinished { get; private set; }
+    public bool IsBuilding { get; private set; }
 
-    private void Awake()
+    private float builderWorkTimer;
+    private Coroutine fallbackRoutine;
+
+    private readonly List<Material> cachedMaterials = new();
+    private readonly Dictionary<Material, Color> originalColors = new();
+
+    private BuildType buildType = BuildType.None;
+
+    public void SetBuildType(BuildType type)
     {
-        meshRenderer = GetComponent<MeshRenderer>();
-
-        if (meshRenderer != null)
-        {
-            originalMaterial = meshRenderer.material;
-            originalColor = originalMaterial.color;
-        }
+        buildType = type;
     }
 
-    public void StartConstruction()
+    public void BeginConstruction()
     {
-        if (isBuilding)
+        if (IsBuilding || IsFinished)
             return;
 
-        isBuilding = true;
+        CacheMaterials();
+
+        IsBuilding = true;
         IsFinished = false;
+        builderWorkTimer = 0f;
 
-        StartCoroutine(BuildRoutine());
+        ApplyTranslucent(true);
+
+        if (fallbackRoutine != null)
+            StopCoroutine(fallbackRoutine);
+
+        fallbackRoutine = StartCoroutine(FallbackFinishRoutine());
     }
 
-    private IEnumerator BuildRoutine()
+    public void NotifyBuilderWorking(float deltaTime)
     {
-        if (meshRenderer != null)
-        {
-            Color buildColor = new Color(0.2f, 0.4f, 1f, 0.4f);
-            meshRenderer.material.color = buildColor;
-            SetMaterialToTransparent(meshRenderer.material);
-        }
+        if (!IsBuilding || IsFinished)
+            return;
 
-        yield return new WaitForSeconds(buildTimeSeconds);
+        builderWorkTimer += deltaTime;
 
-        // Finished look
-        if (meshRenderer != null)
-        {
-            meshRenderer.material.color = originalColor;
-            SetMaterialToOpaque(meshRenderer.material);
-        }
-
-        isBuilding = false;
-        IsFinished = true;
+        if (builderWorkTimer >= builderWorkTime)
+            FinishConstruction();
     }
 
-    private void SetMaterialToTransparent(Material mat)
+    private IEnumerator FallbackFinishRoutine()
+    {
+        yield return new WaitForSeconds(maxBuildTime);
+
+        if (!IsFinished)
+            FinishConstruction();
+    }
+
+    public void FinishConstruction()
+    {
+        if (IsFinished)
+            return;
+
+        IsFinished = true;
+        IsBuilding = false;
+
+        if (fallbackRoutine != null)
+            StopCoroutine(fallbackRoutine);
+
+        ApplyTranslucent(false);
+
+        if (BuildProgressTracker.Instance != null && buildType != BuildType.None)
+            BuildProgressTracker.Instance.MarkBuilt(buildType);
+    }
+
+    private void CacheMaterials()
+    {
+        cachedMaterials.Clear();
+        originalColors.Clear();
+
+        Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer r in renderers)
+        {
+            if (r == null) continue;
+
+            foreach (Material mat in r.materials)
+            {
+                if (mat == null || cachedMaterials.Contains(mat))
+                    continue;
+
+                cachedMaterials.Add(mat);
+
+                if (mat.HasProperty("_Color"))
+                    originalColors[mat] = mat.color;
+            }
+        }
+    }
+
+    private void ApplyTranslucent(bool translucent)
+    {
+        foreach (Material mat in cachedMaterials)
+        {
+            if (mat == null || !mat.HasProperty("_Color"))
+                continue;
+
+            if (!mat.HasProperty("_Mode"))
+                continue;
+
+            if (translucent)
+            {
+                SetMaterialTransparent(mat);
+                Color c = mat.color;
+                c.a = constructionAlpha;
+                mat.color = c;
+            }
+            else
+            {
+                SetMaterialOpaque(mat);
+
+                if (originalColors.TryGetValue(mat, out var original))
+                    mat.color = original;
+            }
+        }
+    }
+
+    private void SetMaterialTransparent(Material mat)
     {
         mat.SetFloat("_Mode", 3);
         mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
@@ -69,7 +145,7 @@ public class BuildingConstruction : MonoBehaviour
         mat.renderQueue = 3000;
     }
 
-    private void SetMaterialToOpaque(Material mat)
+    private void SetMaterialOpaque(Material mat)
     {
         mat.SetFloat("_Mode", 0);
         mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);

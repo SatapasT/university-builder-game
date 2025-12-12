@@ -32,17 +32,47 @@ public static class BuildDatabase
     private static readonly Dictionary<BuildType, BuildInfo> data =
         new Dictionary<BuildType, BuildInfo>
         {
+            // ---------------- CASTLE ----------------
             {
                 BuildType.Castle,
                 new BuildInfo(
                     "Durham Castle",
-                    // Info / description text
-                    "A fortified stronghold overlooking the river. " +
-                    "One of Durham's landmarks.",
+                    "A fortified Norman stronghold overlooking the River Wear. " +
+                    "It serves as both a defensive bastion and a symbol of authority.",
                     new[]
                     {
                         new ResourceAmount(ResourceType.Wood, 5),
                         new ResourceAmount(ResourceType.Stone, 5)
+                    }
+                )
+            },
+
+            // ---------------- BRIDGE ----------------
+            {
+                BuildType.Bridge,
+                new BuildInfo(
+                    "Elvet Bridge",
+                    "A sturdy stone bridge spanning the River Wear, enabling trade, travel, " +
+                    "and easier access between settlements.",
+                    new[]
+                    {
+                        new ResourceAmount(ResourceType.Wood, 4),
+                        new ResourceAmount(ResourceType.Stone, 6)
+                    }
+                )
+            },
+
+            // ---------------- COURTYARD ----------------
+            {
+                BuildType.Courtyard,
+                new BuildInfo(
+                    "Castle Courtyard",
+                    "An open gathering space within the castle grounds. " +
+                    "Used for training, markets, and daily life within the walls.",
+                    new[]
+                    {
+                        new ResourceAmount(ResourceType.Wood, 3),
+                        new ResourceAmount(ResourceType.Stone, 4)
                     }
                 )
             }

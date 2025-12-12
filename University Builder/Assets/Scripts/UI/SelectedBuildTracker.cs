@@ -5,18 +5,27 @@ using System.Collections.Generic;
 
 public class SelectedBuildTracker : MonoBehaviour
 {
+    [System.Serializable]
+    public class BuildObjectEntry
+    {
+        public BuildType type;
+        public GameObject buildingObject;
+        public Transform buildSitePoint;
+    }
+
     public static SelectedBuildTracker Instance { get; private set; }
 
     [SerializeField] private GameObject InfoText;
 
     [Header("Building Execution")]
-    [SerializeField] private GameObject castleObject;
+    [SerializeField] private List<BuildObjectEntry> buildObjects = new();
     [SerializeField] private GameObject builderPrefab;
     [SerializeField] private Transform builderSpawnPoint;
 
     public BuildType CurrentBuild { get; private set; } = BuildType.None;
 
     private TextMeshProUGUI infoTextMesh;
+    private readonly Dictionary<BuildType, BuildObjectEntry> buildMap = new();
 
     private void Awake()
     {
@@ -35,9 +44,13 @@ public class SelectedBuildTracker : MonoBehaviour
             InfoText.SetActive(false);
         }
 
-        if (castleObject != null)
+        buildMap.Clear();
+        foreach (var entry in buildObjects)
         {
-            castleObject.SetActive(false);
+            if (entry == null || entry.buildingObject == null) continue;
+
+            buildMap[entry.type] = entry;
+            entry.buildingObject.SetActive(false);
         }
     }
 
@@ -57,91 +70,95 @@ public class SelectedBuildTracker : MonoBehaviour
         return true;
     }
 
+    private bool IsBlockedByBuildState(BuildType type)
+    {
+        if (BuildProgressTracker.Instance == null)
+            return false;
+
+        var state = BuildProgressTracker.Instance.GetState(type);
+        return state == BuildProgressTracker.BuildState.Built ||
+               state == BuildProgressTracker.BuildState.InProgress;
+    }
+
     public bool CanAffordCurrentBuild()
     {
-        if (ResourcesManager.Instance == null)
-            return false;
+        if (ResourcesManager.Instance == null) return false;
+        if (CurrentBuild == BuildType.None) return false;
 
-        if (CurrentBuild == BuildType.None)
+        if (IsBlockedByBuildState(CurrentBuild))
             return false;
 
         BuildInfo buildInfo = BuildDatabase.Get(CurrentBuild);
-        if (buildInfo == null)
-            return false;
+        if (buildInfo == null) return false;
 
-        Dictionary<ResourceType, int> playerResources = ResourcesManager.Instance.GetAllResources();
+        var playerResources = ResourcesManager.Instance.GetAllResources();
         return HasEnoughResources(buildInfo, playerResources);
     }
+
     public bool TryStartConstruction()
     {
-        if (ResourcesManager.Instance == null)
-            return false;
+        if (ResourcesManager.Instance == null) return false;
+        if (CurrentBuild == BuildType.None) return false;
 
-        if (CurrentBuild == BuildType.None)
+        if (IsBlockedByBuildState(CurrentBuild))
             return false;
 
         BuildInfo buildInfo = BuildDatabase.Get(CurrentBuild);
-        if (buildInfo == null)
-            return false;
+        if (buildInfo == null) return false;
 
-        Dictionary<ResourceType, int> playerResources = ResourcesManager.Instance.GetAllResources();
-        if (!HasEnoughResources(buildInfo, playerResources))
-            return false;
+        var playerResources = ResourcesManager.Instance.GetAllResources();
+        if (!HasEnoughResources(buildInfo, playerResources)) return false;
 
         foreach (ResourceAmount cost in buildInfo.Costs)
-        {
             ResourcesManager.Instance.DeductResources(cost.type, cost.amount);
-        }
 
-        if (CurrentBuild == BuildType.Castle)
-        {
-            StartCastleConstruction(buildInfo);
-        }
-
+        StartConstruction(CurrentBuild);
         return true;
     }
 
-    private void StartCastleConstruction(BuildInfo buildInfo)
+    private void StartConstruction(BuildType buildType)
     {
-        if (castleObject == null)
+        if (!buildMap.TryGetValue(buildType, out var entry) || entry == null || entry.buildingObject == null)
         {
-            Debug.LogError("SelectedBuildTracker: castleObject is not assigned.");
+            Debug.LogError($"SelectedBuildTracker: No building object assigned for {buildType}. Add it to buildObjects list in Inspector.");
             return;
         }
 
-        castleObject.SetActive(true);
+        if (BuildProgressTracker.Instance != null)
+            BuildProgressTracker.Instance.MarkInProgress(buildType);
 
-        BuildingConstruction buildingConstruction =
-            castleObject.GetComponent<BuildingConstruction>();
+        GameObject buildingObject = entry.buildingObject;
+        buildingObject.SetActive(true);
 
+        var buildingConstruction = buildingObject.GetComponent<BuildingConstruction>();
         if (buildingConstruction == null)
         {
-            Debug.LogError("SelectedBuildTracker: BuildingConstruction component missing on castleObject.");
+            Debug.LogError($"SelectedBuildTracker: BuildingConstruction missing on {buildType} object ({buildingObject.name}).");
             return;
         }
 
-        buildingConstruction.StartConstruction();
+        buildingConstruction.SetBuildType(buildType);
 
-        if (builderPrefab != null && builderSpawnPoint != null)
+        buildingConstruction.BeginConstruction();
+
+        if (builderPrefab == null || builderSpawnPoint == null)
         {
-            GameObject builderInstance = Instantiate(
-                builderPrefab,
-                builderSpawnPoint.position,
-                builderSpawnPoint.rotation);
-
-            BuilderAgent builderAgent = builderInstance.GetComponent<BuilderAgent>();
-            if (builderAgent != null)
-            {
-                builderAgent.Initialize(castleObject.transform, buildingConstruction);
-            }
-            else
-            {
-                Debug.LogError("SelectedBuildTracker: BuilderAgent missing on builderPrefab.");
-            }
+            Debug.LogWarning("SelectedBuildTracker: builderPrefab or builderSpawnPoint not assigned.");
+            return;
         }
+
+        GameObject builderInstance = Instantiate(builderPrefab, builderSpawnPoint.position, builderSpawnPoint.rotation);
+
+        BuilderAgent builderAgent = builderInstance.GetComponent<BuilderAgent>();
+        if (builderAgent == null)
+        {
+            Debug.LogError("SelectedBuildTracker: BuilderAgent missing on builderPrefab.");
+            return;
+        }
+
+        Transform site = entry.buildSitePoint != null ? entry.buildSitePoint : buildingObject.transform;
+        builderAgent.Initialize(site, buildingConstruction);
     }
-
-
 
     public void ClearSelection()
     {
@@ -150,7 +167,7 @@ public class SelectedBuildTracker : MonoBehaviour
         if (infoTextMesh != null)
         {
             infoTextMesh.text = string.Empty;
-            InfoText.SetActive(false);
+            if (InfoText != null) InfoText.SetActive(false);
         }
     }
 
@@ -158,54 +175,52 @@ public class SelectedBuildTracker : MonoBehaviour
     {
         CurrentBuild = buildType;
 
-        if (infoTextMesh == null)
-            return;
+        if (infoTextMesh == null) return;
 
         BuildInfo buildInfo = BuildDatabase.Get(buildType);
-
         if (buildInfo == null)
         {
             infoTextMesh.text = string.Empty;
-            InfoText.SetActive(false);
+            if (InfoText != null) InfoText.SetActive(false);
             return;
         }
 
-        InfoText.SetActive(true);
+        if (InfoText != null) InfoText.SetActive(true);
 
-        StringBuilder displayTextBuilder = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine($"<b><color=yellow>{buildInfo.Nickname}</color></b>");
 
-        displayTextBuilder.AppendLine($"<b><color=yellow>{buildInfo.Nickname}</color></b>");
+        if (BuildProgressTracker.Instance != null)
+        {
+            var st = BuildProgressTracker.Instance.GetState(buildType);
+            if (st == BuildProgressTracker.BuildState.Built)
+                sb.AppendLine("<color=green><b>BUILT</b></color>");
+            else if (st == BuildProgressTracker.BuildState.InProgress)
+                sb.AppendLine("<color=orange><b>IN PROGRESS</b></color>");
+        }
 
         if (!string.IsNullOrWhiteSpace(buildInfo.Info))
         {
-            displayTextBuilder.AppendLine();
-            displayTextBuilder.AppendLine(buildInfo.Info);
+            sb.AppendLine();
+            sb.AppendLine(buildInfo.Info);
         }
 
-        Dictionary<ResourceType, int> playerResources = null;
-        if (ResourcesManager.Instance != null)
-        {
-            playerResources = ResourcesManager.Instance.GetAllResources();
-        }
+        Dictionary<ResourceType, int> playerResources =
+            ResourcesManager.Instance != null ? ResourcesManager.Instance.GetAllResources() : null;
 
-        displayTextBuilder.AppendLine();
-        displayTextBuilder.AppendLine("<b><color=orange>Costs</color></b>");
+        sb.AppendLine();
+        sb.AppendLine("<b><color=orange>Costs</color></b>");
 
         foreach (ResourceAmount resourceAmount in buildInfo.Costs)
         {
-            string resourceName = resourceAmount.type.ToString();
-            int requiredAmount = resourceAmount.amount;
-
             int currentAmount = 0;
             playerResources?.TryGetValue(resourceAmount.type, out currentAmount);
 
-            string costLine = $"- {currentAmount}/{requiredAmount} {resourceName}";
-            displayTextBuilder.AppendLine(costLine);
+            sb.AppendLine($"- {currentAmount}/{resourceAmount.amount} {resourceAmount.type}");
         }
 
-        infoTextMesh.text = displayTextBuilder.ToString();
+        infoTextMesh.text = sb.ToString();
     }
-
 
     public bool HasSelection => CurrentBuild != BuildType.None;
 }

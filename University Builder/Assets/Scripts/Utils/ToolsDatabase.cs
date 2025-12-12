@@ -12,21 +12,51 @@ public static class ToolsDatabase
                 new List<ToolInfo>
                 {
                     new ToolInfo(
-                        "Basic Axe",
-                        "A worn-out axe.\nHarvests +1 wood per swing.",
-                        new ResourceAmount[] { },     
+                        "Rusted Hatchet",
+                        "A battered old hatchet.\nHarvests +1 wood per swing.",
+                        new ResourceAmount[] { },
                         harvestAmount: 1
                     ),
                     new ToolInfo(
-                        "Copper Axe",
-                        "Improves wood chopping speed.\nHarvests +3 wood per swing.",
+                        "Bronze Axe",
+                        "A sturdier edge and better balance.\nHarvests +3 wood per swing.",
                         new[]
                         {
                             new ResourceAmount(ResourceType.Wood, 10),
                             new ResourceAmount(ResourceType.Stone, 5)
                         },
                         harvestAmount: 3
-                    )
+                    ),
+                    new ToolInfo(
+                        "Iron Axe",
+                        "A reliable iron blade for serious chopping.\nHarvests +6 wood per swing.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 25),
+                            new ResourceAmount(ResourceType.Stone, 15)
+                        },
+                        harvestAmount: 6
+                    ),
+                    new ToolInfo(
+                        "Steel Woodsman Axe",
+                        "A hardened steel head that bites deep.\nHarvests +10 wood per swing.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 45),
+                            new ResourceAmount(ResourceType.Stone, 30)
+                        },
+                        harvestAmount: 10
+                    ),
+                    new ToolInfo(
+                        "Masterwork Axe",
+                        "A master-forged axe fit for a guild champion.\nHarvests +15 wood per swing.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 80),
+                            new ResourceAmount(ResourceType.Stone, 60)
+                        },
+                        harvestAmount: 15
+                    ),
                 }
             },
 
@@ -36,21 +66,51 @@ public static class ToolsDatabase
                 new List<ToolInfo>
                 {
                     new ToolInfo(
-                        "Basic Pickaxe",
-                        "A dull pickaxe.\nHarvests +1 stone per swing.",
+                        "Cracked Pick",
+                        "A dull, cracked pick.\nHarvests +1 stone per swing.",
                         new ResourceAmount[] { },
                         harvestAmount: 1
                     ),
                     new ToolInfo(
-                        "Copper Pickaxe",
-                        "Improves stone mining.\nHarvests +4 stone per swing.",
+                        "Bronze Pickaxe",
+                        "Cuts cleaner into rock.\nHarvests +4 stone per swing.",
                         new[]
                         {
                             new ResourceAmount(ResourceType.Wood, 5),
                             new ResourceAmount(ResourceType.Stone, 10)
                         },
                         harvestAmount: 4
-                    )
+                    ),
+                    new ToolInfo(
+                        "Iron Pickaxe",
+                        "Stronger head, fewer bounces.\nHarvests +8 stone per swing.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 15),
+                            new ResourceAmount(ResourceType.Stone, 25)
+                        },
+                        harvestAmount: 8
+                    ),
+                    new ToolInfo(
+                        "Steel Miner’s Pick",
+                        "Built for deep veins and hard rock.\nHarvests +13 stone per swing.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 25),
+                            new ResourceAmount(ResourceType.Stone, 45)
+                        },
+                        harvestAmount: 13
+                    ),
+                    new ToolInfo(
+                        "Masterwork Pickaxe",
+                        "Perfectly weighted and wickedly sharp.\nHarvests +20 stone per swing.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 40),
+                            new ResourceAmount(ResourceType.Stone, 80)
+                        },
+                        harvestAmount: 20
+                    ),
                 }
             },
 
@@ -61,20 +121,50 @@ public static class ToolsDatabase
                 {
                     new ToolInfo(
                         "Bare Feet",
-                        "No boots. Normal movement speed.",
+                        "No boots.\n+1x movement speed.",
                         new ResourceAmount[] { },
                         movementSpeedBonus: 1.0f
                     ),
                     new ToolInfo(
-                        "Silk Boots",
-                        "Increases movement speed.\n+1.25x movement speed.",
+                        "Leather Boots",
+                        "Basic leather boots.\n+2x movement speed.",
                         new[]
                         {
-                            new ResourceAmount(ResourceType.Wood, 8),
-                            new ResourceAmount(ResourceType.Stone, 2)
+                            new ResourceAmount(ResourceType.Wood, 10),
+                            new ResourceAmount(ResourceType.Stone, 5)
                         },
-                        movementSpeedBonus: 1.25f
-                    )
+                        movementSpeedBonus: 2.0f
+                    ),
+                    new ToolInfo(
+                        "Reinforced Leather Boots",
+                        "Stronger soles and tighter fit.\n+3x movement speed.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 20),
+                            new ResourceAmount(ResourceType.Stone, 12)
+                        },
+                        movementSpeedBonus: 3.0f
+                    ),
+                    new ToolInfo(
+                        "Steel-Plated Boots",
+                        "Balanced for speed and protection.\n+4x movement speed.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 35),
+                            new ResourceAmount(ResourceType.Stone, 25)
+                        },
+                        movementSpeedBonus: 4.0f
+                    ),
+                    new ToolInfo(
+                        "Master Courier Boots",
+                        "Legendary boots worn by royal messengers.\n+5x movement speed.",
+                        new[]
+                        {
+                            new ResourceAmount(ResourceType.Wood, 60),
+                            new ResourceAmount(ResourceType.Stone, 45)
+                        },
+                        movementSpeedBonus: 5.0f
+                    ),
                 }
             }
         };
