@@ -12,6 +12,9 @@ namespace DefaultNamespace
 
         void Update()
         {
+            if (UIManager.AnyMenuOpen)
+                return;
+
             if (Keyboard.current == null) return;
 
             if (currentTarget is MonoBehaviour mb && mb == null)

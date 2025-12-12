@@ -51,9 +51,6 @@ public class WorkshopUI : MonoBehaviour
                 panel.SetActive(true);
         }
 
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
-
         IsOpen = true;
     }
 
@@ -65,9 +62,6 @@ public class WorkshopUI : MonoBehaviour
             if (panel != null)
                 panel.SetActive(false);
         }
-
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
 
         IsOpen = false;
     }

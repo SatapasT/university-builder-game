@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
-public class PlayerMovement : MonoBehaviour
+public class PlayerControl : MonoBehaviour
 {
     public float movementSpeed = 5f;
     public float jumpForce = 5f;
@@ -67,5 +67,10 @@ public class PlayerMovement : MonoBehaviour
         }
 
         rigidbody.linearVelocity = velocity;
+
+        if (Keyboard.current.tabKey.isPressed)
+        {
+            PlayerMenu.Instance.OpenMenu();
+        }
     }
 }
