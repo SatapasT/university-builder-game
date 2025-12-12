@@ -15,10 +15,10 @@ public class Workbench : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        Debug.Log("Workbench Interact");
         if (workshopUI != null)
         {
             workshopUI.ToggleMenu();
+            BasicTutorial.Instance?.NotifyWorkshopOpened();
         }
     }
 
