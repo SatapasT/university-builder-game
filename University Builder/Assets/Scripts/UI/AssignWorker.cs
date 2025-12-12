@@ -18,6 +18,9 @@ public class AssignWorkerUI : MonoBehaviour
     private int selectedWorkerId = -1;
     private WorkerManager.WorkerTask selectedTask = WorkerManager.WorkerTask.None;
 
+    private float timeRefreshTimer = 0f;
+    private const float TIME_REFRESH_INTERVAL = 1f;
+
     public bool HasValidSelection =>
         selectedWorkerId > 0 &&
         selectedTask.type != WorkerManager.WorkerTaskType.None;
@@ -41,22 +44,18 @@ public class AssignWorkerUI : MonoBehaviour
         if (BuildProgressTracker.Instance != null)
             BuildProgressTracker.Instance.OnBuildStateChanged -= OnBuildStateChanged;
 
-        // Match other menus: when leaving, clear + hide
         ClearSelectionUI();
     }
 
     private void OnBuildStateChanged(BuildType type, BuildProgressTracker.BuildState state)
     {
-        // tasks list can change based on build state
         RefreshTaskDropdown();
-        // keep info consistent with current dropdown values
         selectedWorkerId = GetSelectedWorkerId();
         selectedTask = GetSelectedTask();
         UpdateInfoText();
         WorkshopUI.Instance?.RenderConfirmButton();
     }
 
-    // ---------------- PUBLIC API (WorkshopUI calls this when switching menus) ----------------
 
     public void ClearSelectionUI()
     {
@@ -79,11 +78,11 @@ public class AssignWorkerUI : MonoBehaviour
         WorkshopUI.Instance?.RenderConfirmButton();
     }
 
-    // ---------------- Dropdown events (hook these in Inspector) ----------------
 
     public void OnWorkerDropdownChanged(int _)
     {
         selectedWorkerId = GetSelectedWorkerId();
+        timeRefreshTimer = 0f;
         UpdateInfoText();
         WorkshopUI.Instance?.RenderConfirmButton();
     }
@@ -91,11 +90,11 @@ public class AssignWorkerUI : MonoBehaviour
     public void OnTaskDropdownChanged(int _)
     {
         selectedTask = GetSelectedTask();
+        timeRefreshTimer = 0f;
         UpdateInfoText();
         WorkshopUI.Instance?.RenderConfirmButton();
     }
 
-    // ---------------- Confirm ----------------
 
     public void ConfirmAssign()
     {
@@ -104,8 +103,6 @@ public class AssignWorkerUI : MonoBehaviour
 
         WorkerManager.Instance.AssignWorker(selectedWorkerId, selectedTask);
 
-        // IMPORTANT: do NOT ClearSelectionUI here, otherwise it looks like nothing changed.
-        // Just refresh info based on current dropdown selection.
         UpdateInfoText();
         WorkshopUI.Instance?.RenderConfirmButton();
     }
@@ -125,7 +122,6 @@ public class AssignWorkerUI : MonoBehaviour
         return true;
     }
 
-    // ---------------- Dropdown building ----------------
 
     public void RefreshDropdowns()
     {
@@ -208,7 +204,6 @@ public class AssignWorkerUI : MonoBehaviour
         return taskByOptionIndex[idx];
     }
 
-    // ---------------- Info display (dropdown-driven only) ----------------
 
     private void HideInfo()
     {
@@ -225,7 +220,6 @@ public class AssignWorkerUI : MonoBehaviour
         bool hasWorkerSelected = selectedWorkerId > 0;
         bool hasTaskSelected = selectedTask.type != WorkerManager.WorkerTaskType.None;
 
-        // ✅ exactly what you asked: show/hide based ONLY on dropdown selections
         if (!hasWorkerSelected && !hasTaskSelected)
         {
             HideInfo();
@@ -268,6 +262,38 @@ public class AssignWorkerUI : MonoBehaviour
                 sb.AppendLine($"- Worker {w}");
         }
 
+        if (selectedTask.type == WorkerManager.WorkerTaskType.Build)
+        {
+            if (SelectedBuildTracker.Instance != null &&
+                SelectedBuildTracker.Instance.TryGetSiteAndConstruction(selectedTask.buildType, out _, out var construction) &&
+                construction != null && construction.IsBuilding && !construction.IsFinished)
+            {
+                float remaining = construction.GetRemainingSeconds();
+                int workerCount = WorkerManager.Instance.GetAssignedCount(selectedTask.buildType);
+
+                sb.AppendLine();
+                sb.AppendLine("<b><color=orange>Construction</color></b>");
+                sb.AppendLine($"Remaining Time: <color=yellow>{remaining:0.0}s</color>");
+                sb.AppendLine($"Active Workers: <color=yellow>{workerCount}</color> (1 worker = 1s/s)");
+            }
+        }
+
         infoText.text = sb.ToString();
     }
+    private void Update()
+    {
+        if (infoText == null || !infoText.gameObject.activeSelf)
+            return;
+
+        if (selectedTask.type != WorkerManager.WorkerTaskType.Build)
+            return;
+
+        timeRefreshTimer += Time.deltaTime;
+        if (timeRefreshTimer >= TIME_REFRESH_INTERVAL)
+        {
+            timeRefreshTimer = 0f;
+            UpdateInfoText();
+        }
+    }
+
 }

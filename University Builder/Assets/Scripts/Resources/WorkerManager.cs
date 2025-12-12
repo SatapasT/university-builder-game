@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class WorkerManager : MonoBehaviour
@@ -42,11 +42,14 @@ public class WorkerManager : MonoBehaviour
     }
 
     [Header("Starting workers (capacity)")]
-    [SerializeField] private int startingWorkers = 1;
+    [SerializeField] private int startingWorkers = 3; 
+
+    [Header("Workers gained per building completed")]
+    [SerializeField] private int workersPerBuildingCompleted = 1; 
 
     [Header("Worker Agent Spawning (persistent)")]
-    [SerializeField] private GameObject builderPrefab;         
-    [SerializeField] private Transform builderSpawnPoint;      
+    [SerializeField] private GameObject builderPrefab;
+    [SerializeField] private Transform builderSpawnPoint;
 
     [Header("Gather targets")]
     [SerializeField] private string treeTag = "Tree";
@@ -55,12 +58,12 @@ public class WorkerManager : MonoBehaviour
     private int maxWorkers;
 
     private readonly Dictionary<int, WorkerTask> workerToTask = new();
-
     private readonly Dictionary<int, BuilderAgent> workerToAgent = new();
-
     private readonly Dictionary<int, float> gatherTimer = new();
 
     private readonly HashSet<BuildType> appliedBuilderUnlocks = new();
+
+    private readonly HashSet<BuildType> rewardedCompletionWorkers = new();
 
     private void Awake()
     {
@@ -127,6 +130,14 @@ public class WorkerManager : MonoBehaviour
         if (state != BuildProgressTracker.BuildState.Built)
             return;
 
+        if (!rewardedCompletionWorkers.Contains(type))
+        {
+            rewardedCompletionWorkers.Add(type);
+
+            if (workersPerBuildingCompleted > 0)
+                AddWorkerSlots(workersPerBuildingCompleted);
+        }
+
         var info = BuildDatabase.Get(type);
         if (info != null && info.UnlocksBuilderSlots > 0 && !appliedBuilderUnlocks.Contains(type))
         {
@@ -159,7 +170,6 @@ public class WorkerManager : MonoBehaviour
 
     public int GetMaxWorkers() => maxWorkers;
     public string GetWorkerName(int workerId) => $"Worker {workerId}";
-
 
     public BuildType GetWorkerTask(int workerId)
     {
@@ -204,7 +214,7 @@ public class WorkerManager : MonoBehaviour
         }
 
         workerToTask[workerId] = task;
-        gatherTimer[workerId] = 0f; 
+        gatherTimer[workerId] = 0f;
 
         SpawnMissingAgents();
 
@@ -266,7 +276,6 @@ public class WorkerManager : MonoBehaviour
         return result;
     }
 
-
     private void SpawnMissingAgents()
     {
         if (builderPrefab == null || builderSpawnPoint == null)
@@ -290,7 +299,6 @@ public class WorkerManager : MonoBehaviour
             }
 
             workerToAgent[i] = agent;
-
             agent.SetIdle(builderSpawnPoint);
         }
     }

@@ -34,7 +34,6 @@ public class BuildInfo
         string providesInfo,
         ResourceAmount[] costs,
         float buildTimeSeconds,
-        int unlocksBuilderSlots = 0,
         BuildType[] requiredBuildings = null,
         ResourceAmount[] passiveIncome = null,
         ResourceType[] unlocksProcessing = null)
@@ -45,7 +44,6 @@ public class BuildInfo
 
         Costs = costs;
         BuildTimeSeconds = buildTimeSeconds;
-        UnlocksBuilderSlots = unlocksBuilderSlots;
 
         RequiredBuildings = requiredBuildings ?? new BuildType[0];
         PassiveIncome = passiveIncome ?? new ResourceAmount[0];
@@ -74,7 +72,6 @@ public static class BuildDatabase
                         new ResourceAmount(ResourceType.Stone, 5)
                     },
                     buildTimeSeconds: 20f,
-                    unlocksBuilderSlots: 0,
                     passiveIncome: new[]
                     {
                         new ResourceAmount(ResourceType.Gold, 1)
@@ -95,7 +92,6 @@ public static class BuildDatabase
                         new ResourceAmount(ResourceType.Stone, 6)
                     },
                     buildTimeSeconds: 15f,
-                    unlocksBuilderSlots: 0,
                     passiveIncome: new[]
                     {
                         new ResourceAmount(ResourceType.Gold, 1)
@@ -117,7 +113,6 @@ public static class BuildDatabase
                         new ResourceAmount(ResourceType.Gold, 1)
                     },
                     buildTimeSeconds: 25f,
-                    unlocksBuilderSlots: 1,
                     passiveIncome: new[]
                     {
                         new ResourceAmount(ResourceType.Gold, 1)
@@ -148,7 +143,6 @@ public static class BuildDatabase
                         new ResourceAmount(ResourceType.Iron, 1)
                     },
                     buildTimeSeconds: 30f,
-                    unlocksBuilderSlots: 1,
                     passiveIncome: new[]
                     {
                         new ResourceAmount(ResourceType.Gold, 1)
@@ -179,7 +173,6 @@ public static class BuildDatabase
                         new ResourceAmount(ResourceType.Planks, 1)
                     },
                     buildTimeSeconds: 40f,
-                    unlocksBuilderSlots: 1,
                     passiveIncome: new[]
                     {
                         new ResourceAmount(ResourceType.Gold, 1)
@@ -206,7 +199,6 @@ public static class BuildDatabase
                         new ResourceAmount(ResourceType.Planks, 2)
                     },
                     buildTimeSeconds: 45f,
-                    unlocksBuilderSlots: 1,
                     requiredBuildings: new[]
                     {
                         BuildType.GrandHall

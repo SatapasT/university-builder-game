@@ -1,6 +1,7 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Text;
 
 public class PlayerMenu : MonoBehaviour
 {
@@ -11,7 +12,11 @@ public class PlayerMenu : MonoBehaviour
 
     [SerializeField] private GameObject MenuBackdrop;
     [SerializeField] private GameObject MainButtonContainer;
+
     [SerializeField] private GameObject PlayerStatsContainer;
+    [SerializeField] private GameObject WorkerAssignmentContainer;
+    [SerializeField] private GameObject AccessibilityContainer;
+
     [SerializeField] private GameObject PlayerModel;
     [SerializeField] private GameObject TeleportLocation;
 
@@ -19,6 +24,10 @@ public class PlayerMenu : MonoBehaviour
     [SerializeField] private TextMeshProUGUI playerAxeInfo;
     [SerializeField] private TextMeshProUGUI playerPickaxeInfo;
     [SerializeField] private TextMeshProUGUI playerBootsInfo;
+
+    // ✅ ADD THIS: Worker Assignment UI text
+    [Header("Worker Assignment UI")]
+    [SerializeField] private TextMeshProUGUI workerAssignmentInfoText;
 
     public bool IsOpen { get; private set; }
 
@@ -104,39 +113,33 @@ public class PlayerMenu : MonoBehaviour
         if (info == null)
             return $"<color=red><b>{type}</b>: None</color>";
 
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
-        // ----- NAME -----
         sb.AppendLine($"<b><color=yellow>{info.Name}</color></b>");
         sb.AppendLine();
 
-        // ----- DESCRIPTION -----
         if (!string.IsNullOrWhiteSpace(info.Description))
         {
             sb.AppendLine($"<color=#DDDDDD>{info.Description}</color>");
             sb.AppendLine();
         }
 
-        // ----- STATS HEADER -----
         sb.AppendLine("<b><color=orange>STATS</color></b>");
 
         bool hasStat = false;
 
-        // ----- HARVEST STAT -----
         if (info.HarvestAmount > 0)
         {
             hasStat = true;
             sb.AppendLine($"<color=#90EE90>- Harvest:</color> <b>+{info.HarvestAmount}</b> per action");
         }
 
-        // ----- SPEED STAT -----
         if (info.MovementSpeedBonus > 0f && info.MovementSpeedBonus != 1f)
         {
             hasStat = true;
             sb.AppendLine($"<color=#ADD8E6>- Move Speed:</color> <b>x{info.MovementSpeedBonus:0.00}</b>");
         }
 
-        // ----- NO BONUS CASE -----
         if (!hasStat)
         {
             sb.AppendLine("<color=grey>- No bonuses</color>");
@@ -144,7 +147,6 @@ public class PlayerMenu : MonoBehaviour
 
         return sb.ToString().TrimEnd();
     }
-
 
     public void openPlayerStats()
     {
@@ -159,22 +161,119 @@ public class PlayerMenu : MonoBehaviour
             return;
         }
 
-        // Axe
         if (playerAxeInfo != null)
             playerAxeInfo.text = BuildToolLine(ToolType.Axe);
 
-        // Pickaxe
         if (playerPickaxeInfo != null)
             playerPickaxeInfo.text = BuildToolLine(ToolType.Pickaxe);
 
-        // Boots
         if (playerBootsInfo != null)
             playerBootsInfo.text = BuildToolLine(ToolType.Boots);
     }
 
-
     public void closePlayerStats()
     {
         PlayerStatsContainer.SetActive(false);
+    }
+
+    // ✅ ADD THIS helper: builds nice formatted assignment page
+    private string BuildWorkerAssignmentText()
+    {
+        if (WorkerManager.Instance == null)
+            return "<color=red><b>WorkerManager missing</b></color>";
+
+        int max = WorkerManager.Instance.GetMaxWorkers();
+        if (max <= 0)
+            return "<color=grey>No workers available.</color>";
+
+        int idle = 0, build = 0, wood = 0, stone = 0;
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.AppendLine("<b><color=orange>WORKER ASSIGNMENTS</color></b>");
+        sb.AppendLine("<color=#BBBBBB>Who is doing what right now</color>");
+        sb.AppendLine();
+
+        for (int i = 1; i <= max; i++)
+        {
+            var task = WorkerManager.Instance.GetWorkerFullTask(i);
+
+            string taskColor;
+            switch (task.type)
+            {
+                case WorkerManager.WorkerTaskType.None:
+                    taskColor = "grey";
+                    idle++;
+                    break;
+
+                case WorkerManager.WorkerTaskType.Build:
+                    taskColor = "orange";
+                    build++;
+                    break;
+
+                case WorkerManager.WorkerTaskType.GatherWood:
+                    taskColor = "#90EE90"; // light green
+                    wood++;
+                    break;
+
+                case WorkerManager.WorkerTaskType.GatherStone:
+                    taskColor = "#ADD8E6"; // light blue
+                    stone++;
+                    break;
+
+                default:
+                    taskColor = "white";
+                    break;
+            }
+
+            // Example:
+            // Worker 1 → Gather Wood
+            sb.AppendLine(
+                $"<b>Worker {i}</b>  <color=#777777>→</color>  <color={taskColor}><b>{task.DisplayName()}</b></color>"
+            );
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("<b><color=orange>SUMMARY</color></b>");
+        sb.AppendLine($"<color=grey>- Idle:</color> <b>{idle}</b>");
+        sb.AppendLine($"<color=orange>- Building:</color> <b>{build}</b>");
+        sb.AppendLine($"<color=#90EE90>- Gathering Wood:</color> <b>{wood}</b>");
+        sb.AppendLine($"<color=#ADD8E6>- Gathering Stone:</color> <b>{stone}</b>");
+
+        return sb.ToString().TrimEnd();
+    }
+
+    public void openWorkerAssignment()
+    {
+        if (WorkerAssignmentContainer != null)
+            WorkerAssignmentContainer.SetActive(true);
+
+        // Optional: hide main menu buttons while inside page (same vibe as stats pages)
+        // closeMainMenu();
+
+        // ✅ Render worker info
+        if (workerAssignmentInfoText != null)
+            workerAssignmentInfoText.text = BuildWorkerAssignmentText();
+    }
+
+    public void closeWorkerAssignment()
+    {
+        if (WorkerAssignmentContainer != null)
+            WorkerAssignmentContainer.SetActive(false);
+
+        // Optional: show main menu again
+        // openMainMenu();
+    }
+
+    public void openAccessibilityOptions()
+    {
+        if (AccessibilityContainer != null)
+            AccessibilityContainer.SetActive(true);
+    }
+
+    public void closeAccessibilityOptions()
+    {
+        if (AccessibilityContainer != null)
+            AccessibilityContainer.SetActive(false);
     }
 }
