@@ -38,7 +38,7 @@ public static class BuildDatabase
                 new BuildInfo(
                     "Durham Castle",
                     "A fortified Norman stronghold overlooking the River Wear. " +
-                    "It serves as both a defensive bastion and a symbol of authority.",
+                    "Seat of power and military control within the region.",
                     new[]
                     {
                         new ResourceAmount(ResourceType.Wood, 5),
@@ -53,7 +53,7 @@ public static class BuildDatabase
                 new BuildInfo(
                     "Elvet Bridge",
                     "A sturdy stone bridge spanning the River Wear, enabling trade, travel, " +
-                    "and easier access between settlements.",
+                    "and reliable passage into the city.",
                     new[]
                     {
                         new ResourceAmount(ResourceType.Wood, 4),
@@ -66,13 +66,58 @@ public static class BuildDatabase
             {
                 BuildType.Courtyard,
                 new BuildInfo(
-                    "Castle Courtyard",
-                    "An open gathering space within the castle grounds. " +
-                    "Used for training, markets, and daily life within the walls.",
+                    "Inner Courtyard",
+                    "The central open space of the castle complex. " +
+                    "Used for training, gatherings, and daily life within the walls.",
                     new[]
                     {
                         new ResourceAmount(ResourceType.Wood, 3),
                         new ResourceAmount(ResourceType.Stone, 4)
+                    }
+                )
+            },
+
+            // ---------------- MOTTE ----------------
+            {
+                BuildType.Motte,
+                new BuildInfo(
+                    "Castle Motte",
+                    "A raised earthen mound forming the oldest part of the fortress. " +
+                    "Provides height, visibility, and a strong defensive advantage.",
+                    new[]
+                    {
+                        new ResourceAmount(ResourceType.Wood, 2),
+                        new ResourceAmount(ResourceType.Stone, 3)
+                    }
+                )
+            },
+
+            // ---------------- GRAND HALL ----------------
+            {
+                BuildType.GrandHall,
+                new BuildInfo(
+                    "Grand Hall",
+                    "The heart of castle life. A place for feasts, councils, and ceremonies, " +
+                    "where nobles and officials gather under one roof.",
+                    new[]
+                    {
+                        new ResourceAmount(ResourceType.Wood, 4),
+                        new ResourceAmount(ResourceType.Stone, 4)
+                    }
+                )
+            },
+
+            // ---------------- LIBRARY ----------------
+            {
+                BuildType.Libary,
+                new BuildInfo(
+                    "Monastic Library",
+                    "A quiet hall of manuscripts and knowledge, maintained by scribes and clerics. " +
+                    "Preserves learning, records, and history.",
+                    new[]
+                    {
+                        new ResourceAmount(ResourceType.Wood, 3),
+                        new ResourceAmount(ResourceType.Stone, 2)
                     }
                 )
             }

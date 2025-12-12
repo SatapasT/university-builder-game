@@ -4,4 +4,7 @@ public enum BuildType
     Castle = 1,
     Bridge = 2,
     Courtyard = 3,
+    Motte = 4,
+    GrandHall = 5,
+    Libary = 6,
 }
