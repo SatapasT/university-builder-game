@@ -71,7 +71,7 @@ public static class BuildDatabase
                         new ResourceAmount(ResourceType.Wood, 50),
                         new ResourceAmount(ResourceType.Stone, 50)
                     },
-                    buildTimeSeconds: 20f,
+                    buildTimeSeconds: 80f,
                     passiveIncome: new[]
                     {
                         new ResourceAmount(ResourceType.Gold, 2)
@@ -91,7 +91,7 @@ public static class BuildDatabase
                         new ResourceAmount(ResourceType.Wood, 50),
                         new ResourceAmount(ResourceType.Stone, 300)
                     },
-                    buildTimeSeconds: 15f,
+                    buildTimeSeconds: 100f,
                     passiveIncome: new[]
                     {
                         new ResourceAmount(ResourceType.Gold, 10)
@@ -112,7 +112,7 @@ public static class BuildDatabase
                         new ResourceAmount(ResourceType.Stone, 300),
                         new ResourceAmount(ResourceType.Gold, 50)
                     },
-                    buildTimeSeconds: 25f,
+                    buildTimeSeconds: 125f,
                     passiveIncome: new[]
                     {
                         new ResourceAmount(ResourceType.Gold, 5)
@@ -142,7 +142,7 @@ public static class BuildDatabase
                         new ResourceAmount(ResourceType.Gold, 100),
                         new ResourceAmount(ResourceType.Iron, 30)
                     },
-                    buildTimeSeconds: 30f,
+                    buildTimeSeconds: 150f,
                     passiveIncome: new[]
                     {
                         new ResourceAmount(ResourceType.Gold, 30)
@@ -172,7 +172,7 @@ public static class BuildDatabase
                         new ResourceAmount(ResourceType.Iron, 50),
                         new ResourceAmount(ResourceType.Planks, 100)
                     },
-                    buildTimeSeconds: 40f,
+                    buildTimeSeconds: 200f,
                     passiveIncome: new[]
                     {
                         new ResourceAmount(ResourceType.Gold, 100)
@@ -198,7 +198,7 @@ public static class BuildDatabase
                         new ResourceAmount(ResourceType.Iron, 100),
                         new ResourceAmount(ResourceType.Planks, 100)
                     },
-                    buildTimeSeconds: 45f,
+                    buildTimeSeconds: 250f,
                     requiredBuildings: new[]
                     {
                         BuildType.GrandHall
