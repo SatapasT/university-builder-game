@@ -1858,7 +1858,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &148216332
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5310,8 +5310,8 @@ MonoBehaviour:
   m_FillRect: {fileID: 730769971}
   m_HandleRect: {fileID: 871263447}
   m_Direction: 0
-  m_MinValue: 3
-  m_MaxValue: 6
+  m_MinValue: 1
+  m_MaxValue: 5
   m_WholeNumbers: 1
   m_Value: 3
   m_OnValueChanged:
@@ -8433,7 +8433,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &852677185
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9277,7 +9277,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &921393303
 RectTransform:
   m_ObjectHideFlags: 0
@@ -10792,7 +10792,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1094490349
 RectTransform:
   m_ObjectHideFlags: 0
@@ -13013,7 +13013,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1543107004
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17417,19 +17417,7 @@ MonoBehaviour:
   m_Group: {fileID: 0}
   onValueChanged:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2042532741}
-        m_TargetAssemblyTypeName: ColourblindModeToggle, Assembly-CSharp
-        m_MethodName: SetColourblind
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   m_IsOn: 0
 --- !u!114 &2042532741
 MonoBehaviour:
@@ -17444,6 +17432,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ColourblindModeToggle
   colourblindVolume: {fileID: 2147264701}
+  toggle: {fileID: 2042532740}
 --- !u!1 &2059108775
 GameObject:
   m_ObjectHideFlags: 0

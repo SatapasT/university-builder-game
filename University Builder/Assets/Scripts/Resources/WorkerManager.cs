@@ -282,7 +282,6 @@ public class WorkerManager : MonoBehaviour
         return best;
     }
 
-    // This is what the slider calls
     public void SetWorkerCount(int newCount)
     {
         newCount = Mathf.Max(1, newCount);
@@ -290,7 +289,6 @@ public class WorkerManager : MonoBehaviour
         if (newCount == maxWorkers)
             return;
 
-        // Reduce workers
         if (newCount < maxWorkers)
         {
             for (int id = newCount + 1; id <= maxWorkers; id++)
@@ -311,7 +309,6 @@ public class WorkerManager : MonoBehaviour
             return;
         }
 
-        // Increase workers
         int oldMax = maxWorkers;
         maxWorkers = newCount;
 

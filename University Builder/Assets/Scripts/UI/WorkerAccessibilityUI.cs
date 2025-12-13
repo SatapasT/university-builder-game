@@ -15,11 +15,10 @@ public class WorkerAccessibilityUI : MonoBehaviour
             return;
         }
 
-        int current = 1;
+        int current = 3;
         if (WorkerManager.Instance != null)
             current = WorkerManager.Instance.GetMaxWorkers();
 
-        // Make slider behave like an int slider
         workerSlider.wholeNumbers = true;
 
         workerSlider.onValueChanged.RemoveListener(OnWorkerChanged);
@@ -47,13 +46,11 @@ public class WorkerAccessibilityUI : MonoBehaviour
         int newCount = Mathf.RoundToInt(value);
         WorkerManager.Instance.SetWorkerCount(newCount);
 
-        // Read back actual (clamped) value
         int actual = WorkerManager.Instance.GetMaxWorkers();
         workerSlider.SetValueWithoutNotify(actual);
 
         RefreshLabel(actual);
 
-        // If worker assignment panel is open, refresh it
         PlayerMenu.Instance?.RefreshWorkerAssignmentText();
     }
 

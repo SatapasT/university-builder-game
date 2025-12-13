@@ -39,7 +39,7 @@ public static class ToolsDatabase
             ToolType.Axe,
             new List<ToolInfo>
             {
-                // L0 – STARTER (no requirement)
+                // L0 – STARTER
                 new ToolInfo(
                     "Rusted Hatchet",
                     "A basic hatchet. Harvests +1 wood per action.",
@@ -53,7 +53,7 @@ public static class ToolsDatabase
                     requiredBuildings: new BuildType[] { }
                 ),
 
-                // L1 – BRONZE (introduce gold)
+                // L1 – BRONZE
                 new ToolInfo(
                     "Bronze Axe",
                     "A sturdier edge. Harvests +5 wood per action.",
@@ -68,7 +68,7 @@ public static class ToolsDatabase
                     requiredBuildings: new BuildType[] { }
                 ),
 
-                // L2 – IRON (requires Motte)
+                // L2 – IRON
                 new ToolInfo(
                     "Iron Axe",
                     "Reliable iron head. Harvests +10 wood per action.",
@@ -84,7 +84,7 @@ public static class ToolsDatabase
                     requiredBuildings: new[] { BuildType.Motte }
                 ),
 
-                // L3 – STEEL (requires GrandHall, uses planks)
+                // L3 – STEEL
                 new ToolInfo(
                     "Steel Axe",
                     "Balanced and sharp. Harvests +15 wood per action.",
@@ -101,7 +101,7 @@ public static class ToolsDatabase
                     requiredBuildings: new[] { BuildType.GrandHall }
                 ),
 
-                // L4 – MASTERWORK (requires Libary) — highest harvest
+                // L4 – MASTERWORK (requires Libary)
                 new ToolInfo(
                     "Masterwork Axe",
                     "A master-crafted tool. Harvests +20 wood per action.",
@@ -154,7 +154,7 @@ public static class ToolsDatabase
                     requiredBuildings: new BuildType[] { }
                 ),
 
-                // L2 – IRON (Motte)
+                // L2 – IRON
                 new ToolInfo(
                     "Iron Pickaxe",
                     "Harder head, fewer chips. Harvests +10 stone per action.",
@@ -170,7 +170,7 @@ public static class ToolsDatabase
                     requiredBuildings: new[] { BuildType.Motte }
                 ),
 
-                // L3 – STEEL (GrandHall)
+                // L3 – STEEL
                 new ToolInfo(
                     "Steel Pickaxe",
                     "Digs deep and fast. Harvests +15 stone per action.",
@@ -187,7 +187,7 @@ public static class ToolsDatabase
                     requiredBuildings: new[] { BuildType.GrandHall }
                 ),
 
-                // L4 – MASTERWORK (Libary) — highest harvest
+                // L4 – MASTERWORK
                 new ToolInfo(
                     "Masterwork Pickaxe",
                     "Master-crafted for heavy stone. Harvests +20 stone per action.",
@@ -211,7 +211,7 @@ public static class ToolsDatabase
             ToolType.Boots,
             new List<ToolInfo>
             {
-                // L0 – baseline
+                // L0
                 new ToolInfo(
                     "Worn Shoes",
                     "Standard movement speed.",
@@ -240,7 +240,7 @@ public static class ToolsDatabase
                     requiredBuildings: new BuildType[] { }
                 ),
 
-                // L2 – Motte
+                // L2
                 new ToolInfo(
                     "Iron-Toed Boots",
                     "Sturdy and fast. Movement speed x3.",
@@ -256,7 +256,7 @@ public static class ToolsDatabase
                     requiredBuildings: new[] { BuildType.Motte }
                 ),
 
-                // L3 – GrandHall
+                // L3
                 new ToolInfo(
                     "Steel-Plated Boots",
                     "Confident stride. Movement speed x4.",
@@ -273,7 +273,7 @@ public static class ToolsDatabase
                     requiredBuildings: new[] { BuildType.GrandHall }
                 ),
 
-                // L4 – Libary
+                // L4
                 new ToolInfo(
                     "Master Courier Boots",
                     "Master-made. Movement speed x5.",

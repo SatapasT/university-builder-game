@@ -31,11 +31,9 @@ public class RefineMaterialsUI : MonoBehaviour
         }
     }
 
-    // -------- BUTTON HOOKUPS --------
     public void SelectIron() => SelectRefineMaterial(RefineType.Iron);
     public void SelectPlanks() => SelectRefineMaterial(RefineType.Planks);
 
-    // -------- SELECTION --------
     private void SelectRefineMaterial(RefineType type)
     {
         CurrentRefine = type;
@@ -151,7 +149,6 @@ public class RefineMaterialsUI : MonoBehaviour
         return true;
     }
 
-    // -------- CLEAR --------
     public void ClearSelection()
     {
         CurrentRefine = RefineType.None;

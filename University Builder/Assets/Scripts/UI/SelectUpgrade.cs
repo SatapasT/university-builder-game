@@ -75,7 +75,6 @@ public class ToolSelectUpgrade : MonoBehaviour
         // ---------- STATS ----------
         builder.AppendLine("<b><color=orange>Stats</color></b>");
 
-        // HARVEST (Axe & Pickaxe only)
         if (toolType == ToolType.Axe || toolType == ToolType.Pickaxe)
         {
             if (next != null && next.HarvestAmount != current.HarvestAmount)
@@ -84,7 +83,6 @@ public class ToolSelectUpgrade : MonoBehaviour
                 builder.AppendLine($"- Harvest: +{current.HarvestAmount}");
         }
 
-        // MOVE SPEED (Boots only)
         if (toolType == ToolType.Boots)
         {
             if (next != null && Mathf.Abs(next.MovementSpeedBonus - current.MovementSpeedBonus) > 0.01f)
@@ -130,7 +128,6 @@ public class ToolSelectUpgrade : MonoBehaviour
         WorkshopUI.Instance?.RenderConfirmButton();
     }
 
-    // ---------------- CONFIRM BUTTON ----------------
 
     public bool CanAffordSelectedUpgrade()
     {
