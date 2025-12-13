@@ -68,13 +68,13 @@ public static class BuildDatabase
                     "Generates Gold over time.",
                     new[]
                     {
-                        new ResourceAmount(ResourceType.Wood, 5),
-                        new ResourceAmount(ResourceType.Stone, 5)
+                        new ResourceAmount(ResourceType.Wood, 50),
+                        new ResourceAmount(ResourceType.Stone, 50)
                     },
                     buildTimeSeconds: 20f,
                     passiveIncome: new[]
                     {
-                        new ResourceAmount(ResourceType.Gold, 1)
+                        new ResourceAmount(ResourceType.Gold, 2)
                     }
                 )
             },
@@ -88,13 +88,13 @@ public static class BuildDatabase
                     "Generates Gold over time.",
                     new[]
                     {
-                        new ResourceAmount(ResourceType.Wood, 4),
-                        new ResourceAmount(ResourceType.Stone, 6)
+                        new ResourceAmount(ResourceType.Wood, 50),
+                        new ResourceAmount(ResourceType.Stone, 300)
                     },
                     buildTimeSeconds: 15f,
                     passiveIncome: new[]
                     {
-                        new ResourceAmount(ResourceType.Gold, 1)
+                        new ResourceAmount(ResourceType.Gold, 10)
                     }
                 )
             },
@@ -108,14 +108,14 @@ public static class BuildDatabase
                     "Unlocks iron processing.",
                     new[]
                     {
-                        new ResourceAmount(ResourceType.Wood, 2),
-                        new ResourceAmount(ResourceType.Stone, 3),
-                        new ResourceAmount(ResourceType.Gold, 1)
+                        new ResourceAmount(ResourceType.Wood, 200),
+                        new ResourceAmount(ResourceType.Stone, 300),
+                        new ResourceAmount(ResourceType.Gold, 50)
                     },
                     buildTimeSeconds: 25f,
                     passiveIncome: new[]
                     {
-                        new ResourceAmount(ResourceType.Gold, 1)
+                        new ResourceAmount(ResourceType.Gold, 5)
                     },
                     requiredBuildings: new[]
                     {
@@ -137,15 +137,15 @@ public static class BuildDatabase
                     "Unlocks plank processing.",
                     new[]
                     {
-                        new ResourceAmount(ResourceType.Wood, 3),
-                        new ResourceAmount(ResourceType.Stone, 4),
-                        new ResourceAmount(ResourceType.Gold, 1),
-                        new ResourceAmount(ResourceType.Iron, 1)
+                        new ResourceAmount(ResourceType.Wood, 500),
+                        new ResourceAmount(ResourceType.Stone, 200),
+                        new ResourceAmount(ResourceType.Gold, 100),
+                        new ResourceAmount(ResourceType.Iron, 30)
                     },
                     buildTimeSeconds: 30f,
                     passiveIncome: new[]
                     {
-                        new ResourceAmount(ResourceType.Gold, 1)
+                        new ResourceAmount(ResourceType.Gold, 30)
                     },
                     requiredBuildings: new[]
                     {
@@ -167,15 +167,15 @@ public static class BuildDatabase
                     "Unlocks advanced equipment upgrades.",
                     new[]
                     {
-                        new ResourceAmount(ResourceType.Stone, 4),
-                        new ResourceAmount(ResourceType.Gold, 2),
-                        new ResourceAmount(ResourceType.Iron, 1),
-                        new ResourceAmount(ResourceType.Planks, 1)
+                        new ResourceAmount(ResourceType.Stone, 400),
+                        new ResourceAmount(ResourceType.Gold, 1000),
+                        new ResourceAmount(ResourceType.Iron, 50),
+                        new ResourceAmount(ResourceType.Planks, 100)
                     },
                     buildTimeSeconds: 40f,
                     passiveIncome: new[]
                     {
-                        new ResourceAmount(ResourceType.Gold, 1)
+                        new ResourceAmount(ResourceType.Gold, 100)
                     },
                     requiredBuildings: new[]
                     {
@@ -193,10 +193,10 @@ public static class BuildDatabase
                     "Unlocks masterwork tools.",
                     new[]
                     {
-                        new ResourceAmount(ResourceType.Stone, 6),
-                        new ResourceAmount(ResourceType.Gold, 3),
-                        new ResourceAmount(ResourceType.Iron, 2),
-                        new ResourceAmount(ResourceType.Planks, 2)
+                        new ResourceAmount(ResourceType.Stone, 600),
+                        new ResourceAmount(ResourceType.Gold, 3000),
+                        new ResourceAmount(ResourceType.Iron, 100),
+                        new ResourceAmount(ResourceType.Planks, 100)
                     },
                     buildTimeSeconds: 45f,
                     requiredBuildings: new[]

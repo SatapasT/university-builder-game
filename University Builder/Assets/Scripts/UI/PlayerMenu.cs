@@ -25,7 +25,6 @@ public class PlayerMenu : MonoBehaviour
     [SerializeField] private TextMeshProUGUI playerPickaxeInfo;
     [SerializeField] private TextMeshProUGUI playerBootsInfo;
 
-    // ✅ ADD THIS: Worker Assignment UI text
     [Header("Worker Assignment UI")]
     [SerializeField] private TextMeshProUGUI workerAssignmentInfoText;
 
@@ -176,7 +175,6 @@ public class PlayerMenu : MonoBehaviour
         PlayerStatsContainer.SetActive(false);
     }
 
-    // ✅ ADD THIS helper: builds nice formatted assignment page
     private string BuildWorkerAssignmentText()
     {
         if (WorkerManager.Instance == null)
@@ -212,12 +210,12 @@ public class PlayerMenu : MonoBehaviour
                     break;
 
                 case WorkerManager.WorkerTaskType.GatherWood:
-                    taskColor = "#90EE90"; // light green
+                    taskColor = "#90EE90"; 
                     wood++;
                     break;
 
                 case WorkerManager.WorkerTaskType.GatherStone:
-                    taskColor = "#ADD8E6"; // light blue
+                    taskColor = "#ADD8E6";
                     stone++;
                     break;
 
@@ -226,8 +224,6 @@ public class PlayerMenu : MonoBehaviour
                     break;
             }
 
-            // Example:
-            // Worker 1 → Gather Wood
             sb.AppendLine(
                 $"<b>Worker {i}</b>  <color=#777777>→</color>  <color={taskColor}><b>{task.DisplayName()}</b></color>"
             );
@@ -248,10 +244,6 @@ public class PlayerMenu : MonoBehaviour
         if (WorkerAssignmentContainer != null)
             WorkerAssignmentContainer.SetActive(true);
 
-        // Optional: hide main menu buttons while inside page (same vibe as stats pages)
-        // closeMainMenu();
-
-        // ✅ Render worker info
         if (workerAssignmentInfoText != null)
             workerAssignmentInfoText.text = BuildWorkerAssignmentText();
     }
@@ -261,8 +253,6 @@ public class PlayerMenu : MonoBehaviour
         if (WorkerAssignmentContainer != null)
             WorkerAssignmentContainer.SetActive(false);
 
-        // Optional: show main menu again
-        // openMainMenu();
     }
 
     public void openAccessibilityOptions()
@@ -276,4 +266,11 @@ public class PlayerMenu : MonoBehaviour
         if (AccessibilityContainer != null)
             AccessibilityContainer.SetActive(false);
     }
+
+    public void RefreshWorkerAssignmentText()
+    {
+        if (WorkerAssignmentContainer != null && WorkerAssignmentContainer.activeSelf)
+            openWorkerAssignment();
+    }
+
 }

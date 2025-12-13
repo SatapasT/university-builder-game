@@ -42,10 +42,10 @@ public class WorkerManager : MonoBehaviour
     }
 
     [Header("Starting workers (capacity)")]
-    [SerializeField] private int startingWorkers = 3; 
+    [SerializeField] private int startingWorkers = 3;
 
     [Header("Workers gained per building completed")]
-    [SerializeField] private int workersPerBuildingCompleted = 1; 
+    [SerializeField] private int workersPerBuildingCompleted = 1;
 
     [Header("Worker Agent Spawning (persistent)")]
     [SerializeField] private GameObject builderPrefab;
@@ -62,7 +62,6 @@ public class WorkerManager : MonoBehaviour
     private readonly Dictionary<int, float> gatherTimer = new();
 
     private readonly HashSet<BuildType> appliedBuilderUnlocks = new();
-
     private readonly HashSet<BuildType> rewardedCompletionWorkers = new();
 
     private void Awake()
@@ -169,38 +168,16 @@ public class WorkerManager : MonoBehaviour
     }
 
     public int GetMaxWorkers() => maxWorkers;
-    public string GetWorkerName(int workerId) => $"Worker {workerId}";
-
-    public BuildType GetWorkerTask(int workerId)
-    {
-        if (!workerToTask.TryGetValue(workerId, out var task)) return BuildType.None;
-        return task.type == WorkerTaskType.Build ? task.buildType : BuildType.None;
-    }
 
     public WorkerTask GetWorkerFullTask(int workerId)
     {
         return workerToTask.TryGetValue(workerId, out var task) ? task : WorkerTask.None;
     }
 
-    public void AssignWorkerToBuild(int workerId, BuildType buildType)
-    {
-        AssignWorker(workerId, WorkerTask.Build(buildType));
-    }
-
-    public void AssignWorkerToGatherWood(int workerId)
-    {
-        AssignWorker(workerId, WorkerTask.GatherWood());
-    }
-
-    public void AssignWorkerToGatherStone(int workerId)
-    {
-        AssignWorker(workerId, WorkerTask.GatherStone());
-    }
-
-    public void UnassignWorker(int workerId)
-    {
-        AssignWorker(workerId, WorkerTask.None);
-    }
+    public void AssignWorkerToBuild(int workerId, BuildType buildType) => AssignWorker(workerId, WorkerTask.Build(buildType));
+    public void AssignWorkerToGatherWood(int workerId) => AssignWorker(workerId, WorkerTask.GatherWood());
+    public void AssignWorkerToGatherStone(int workerId) => AssignWorker(workerId, WorkerTask.GatherStone());
+    public void UnassignWorker(int workerId) => AssignWorker(workerId, WorkerTask.None);
 
     public void AssignWorker(int workerId, WorkerTask task)
     {
@@ -250,30 +227,6 @@ public class WorkerManager : MonoBehaviour
             agent.SetGatherTarget(t != null ? t : builderSpawnPoint);
             return;
         }
-    }
-
-    public int GetAssignedCount(BuildType buildType)
-    {
-        int count = 0;
-        foreach (var kvp in workerToTask)
-        {
-            if (kvp.Value.type == WorkerTaskType.Build && kvp.Value.buildType == buildType)
-                count++;
-        }
-        return count;
-    }
-
-    public List<int> GetWorkersAssignedTo(WorkerTask task)
-    {
-        List<int> result = new();
-        string key = task.Key();
-
-        foreach (var kvp in workerToTask)
-        {
-            if (kvp.Value.Key() == key)
-                result.Add(kvp.Key);
-        }
-        return result;
     }
 
     private void SpawnMissingAgents()
@@ -328,4 +281,79 @@ public class WorkerManager : MonoBehaviour
 
         return best;
     }
+
+    // This is what the slider calls
+    public void SetWorkerCount(int newCount)
+    {
+        newCount = Mathf.Max(1, newCount);
+
+        if (newCount == maxWorkers)
+            return;
+
+        // Reduce workers
+        if (newCount < maxWorkers)
+        {
+            for (int id = newCount + 1; id <= maxWorkers; id++)
+            {
+                workerToTask.Remove(id);
+                gatherTimer.Remove(id);
+
+                if (workerToAgent.TryGetValue(id, out var agent) && agent != null)
+                    Destroy(agent.gameObject);
+
+                workerToAgent.Remove(id);
+            }
+
+            maxWorkers = newCount;
+
+            AssignWorkerUI.Instance?.RefreshDropdowns();
+            PlayerMenu.Instance?.RefreshWorkerAssignmentText();
+            return;
+        }
+
+        // Increase workers
+        int oldMax = maxWorkers;
+        maxWorkers = newCount;
+
+        for (int id = oldMax + 1; id <= maxWorkers; id++)
+        {
+            workerToTask[id] = WorkerTask.None;
+            gatherTimer[id] = 0f;
+        }
+
+        SpawnMissingAgents();
+
+        AssignWorkerUI.Instance?.RefreshDropdowns();
+        PlayerMenu.Instance?.RefreshWorkerAssignmentText();
+    }
+
+    public int GetAssignedCount(BuildType buildType)
+    {
+        int count = 0;
+
+        foreach (var kvp in workerToTask)
+        {
+            if (kvp.Value.type == WorkerTaskType.Build &&
+                kvp.Value.buildType == buildType)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+    public List<int> GetWorkersAssignedTo(WorkerTask task)
+    {
+        List<int> result = new List<int>();
+        string key = task.Key();
+
+        foreach (var kvp in workerToTask)
+        {
+            if (kvp.Value.Key() == key)
+                result.Add(kvp.Key);
+        }
+
+        return result;
+    }
+
 }
