@@ -1,7 +1,8 @@
-﻿using TMPro;
-using UnityEngine;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
+using TMPro;
+using UnityEngine;
+using UnityEngine.Audio;
 
 public class PlayerMenu : MonoBehaviour
 {
@@ -28,10 +29,14 @@ public class PlayerMenu : MonoBehaviour
     [Header("Worker Assignment UI")]
     [SerializeField] private TextMeshProUGUI workerAssignmentInfoText;
 
+    public AudioClip ClickSoundEffect;
+    private AudioSource audioSource;
+
     public bool IsOpen { get; private set; }
 
     void Start()
     {
+        audioSource = gameObject.AddComponent<AudioSource>();
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -57,6 +62,9 @@ public class PlayerMenu : MonoBehaviour
 
     public void OpenMenu()
     {
+        audioSource.Stop();
+        audioSource.PlayOneShot(ClickSoundEffect);
+
         UIManager.Instance.SetMenuState(true);
         foreach (GameObject panel in MainMenuItem)
         {
@@ -69,6 +77,7 @@ public class PlayerMenu : MonoBehaviour
 
     public void CloseMenu()
     {
+        audioSource.Stop();
         UIManager.Instance.SetMenuState(false);
         foreach (GameObject panel in AllMenuItem)
         {
@@ -81,6 +90,8 @@ public class PlayerMenu : MonoBehaviour
 
     public void TeleportToWorkbench()
     {
+        audioSource.Stop();
+        audioSource.PlayOneShot(ClickSoundEffect);
         var controller = PlayerModel.GetComponent<CharacterController>();
         if (controller != null)
             controller.enabled = false;
@@ -95,6 +106,8 @@ public class PlayerMenu : MonoBehaviour
 
     public void openMainMenu()
     {
+        audioSource.Stop();
+        audioSource.PlayOneShot(ClickSoundEffect);
         MainButtonContainer.SetActive(true);
     }
     public void closeMainMenu()
@@ -149,6 +162,8 @@ public class PlayerMenu : MonoBehaviour
 
     public void openPlayerStats()
     {
+        audioSource.Stop();
+        audioSource.PlayOneShot(ClickSoundEffect);
         if (PlayerStatsContainer != null)
             PlayerStatsContainer.SetActive(true);
 
@@ -241,6 +256,8 @@ public class PlayerMenu : MonoBehaviour
 
     public void openWorkerAssignment()
     {
+        audioSource.Stop();
+        audioSource.PlayOneShot(ClickSoundEffect);
         if (WorkerAssignmentContainer != null)
             WorkerAssignmentContainer.SetActive(true);
 
@@ -257,6 +274,8 @@ public class PlayerMenu : MonoBehaviour
 
     public void openAccessibilityOptions()
     {
+        audioSource.Stop();
+        audioSource.PlayOneShot(ClickSoundEffect);
         if (AccessibilityContainer != null)
             AccessibilityContainer.SetActive(true);
     }

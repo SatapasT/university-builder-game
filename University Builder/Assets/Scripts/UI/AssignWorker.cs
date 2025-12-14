@@ -172,15 +172,15 @@ public class AssignWorkerUI : MonoBehaviour
 
         if (BuildProgressTracker.Instance != null)
         {
-            foreach (BuildType bt in System.Enum.GetValues(typeof(BuildType)))
+            foreach (BuildType buildTracked in System.Enum.GetValues(typeof(BuildType)))
             {
-                if (bt == BuildType.None) continue;
+                if (buildTracked == BuildType.None) continue;
 
-                var state = BuildProgressTracker.Instance.GetState(bt);
+                var state = BuildProgressTracker.Instance.GetState(buildTracked);
                 if (state == BuildProgressTracker.BuildState.InProgress)
                 {
-                    options.Add($"Build: {bt}");
-                    taskByOptionIndex.Add(WorkerManager.WorkerTask.Build(bt));
+                    options.Add($"Build: {buildTracked}");
+                    taskByOptionIndex.Add(WorkerManager.WorkerTask.Build(buildTracked));
                 }
             }
         }

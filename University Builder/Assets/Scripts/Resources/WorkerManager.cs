@@ -41,13 +41,13 @@ public class WorkerManager : MonoBehaviour
         }
     }
 
-    [Header("Starting workers (capacity)")]
+    [Header("Starting workers")]
     [SerializeField] private int startingWorkers = 3;
 
     [Header("Workers gained per building completed")]
     [SerializeField] private int workersPerBuildingCompleted = 1;
 
-    [Header("Worker Agent Spawning (persistent)")]
+    [Header("Worker Agent Spawning")]
     [SerializeField] private GameObject builderPrefab;
     [SerializeField] private Transform builderSpawnPoint;
 
@@ -223,8 +223,8 @@ public class WorkerManager : MonoBehaviour
 
         if (task.type == WorkerTaskType.GatherStone)
         {
-            Transform t = FindClosestWithTag(rockTag, agent.transform.position);
-            agent.SetGatherTarget(t != null ? t : builderSpawnPoint);
+            Transform tag = FindClosestWithTag(rockTag, agent.transform.position);
+            agent.SetGatherTarget(tag != null ? tag : builderSpawnPoint);
             return;
         }
     }
@@ -268,14 +268,14 @@ public class WorkerManager : MonoBehaviour
         Transform best = null;
         float bestDist = float.MaxValue;
 
-        foreach (var o in objs)
+        foreach (var obj in objs)
         {
-            if (o == null) continue;
-            float d = Vector3.Distance(fromPos, o.transform.position);
+            if (obj == null) continue;
+            float d = Vector3.Distance(fromPos, obj.transform.position);
             if (d < bestDist)
             {
                 bestDist = d;
-                best = o.transform;
+                best = obj.transform;
             }
         }
 

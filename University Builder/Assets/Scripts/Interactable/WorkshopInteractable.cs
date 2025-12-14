@@ -7,10 +7,14 @@ public class Workbench : MonoBehaviour, IInteractable
 
     [SerializeField] private WorkshopUI workshopUI;
 
+    public AudioClip clickSoundEffect;
+    private AudioSource audioSource;
+
     void Awake()
     {
         rend = GetComponent<Renderer>();
         defaultColor = rend.material.color;
+        audioSource = gameObject.AddComponent<AudioSource>();
     }
 
     public void Interact()
@@ -19,6 +23,7 @@ public class Workbench : MonoBehaviour, IInteractable
         {
             workshopUI.ToggleMenu();
             BasicTutorial.Instance?.NotifyWorkshopOpened();
+            audioSource.PlayOneShot(clickSoundEffect);
         }
     }
 

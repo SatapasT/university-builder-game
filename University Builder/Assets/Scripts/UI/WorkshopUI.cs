@@ -18,6 +18,9 @@ public class WorkshopUI : MonoBehaviour
     [Header("Confirm")]
     [SerializeField] private GameObject ConfirmButton;
 
+    public AudioClip writingSoundEffect;
+    private AudioSource audioSource;
+
     public bool IsOpen { get; private set; }
 
     public bool IsAssignWorkerMenuOpen => AssignWorkerMenu != null && AssignWorkerMenu.activeInHierarchy;
@@ -36,6 +39,7 @@ public class WorkshopUI : MonoBehaviour
             if (panel != null) panel.SetActive(false);
 
         IsOpen = false;
+        audioSource = gameObject.AddComponent<AudioSource>();
     }
 
     public void ToggleMenu()
@@ -57,6 +61,7 @@ public class WorkshopUI : MonoBehaviour
 
     public void CloseMenu()
     {
+        audioSource.Stop();
         AssignWorkerUI.Instance?.ClearSelectionUI();
 
         UIManager.Instance.SetMenuState(false);
@@ -121,6 +126,8 @@ public class WorkshopUI : MonoBehaviour
 
     public void ClickConfirmButton()
     {
+        audioSource.Stop();
+        audioSource.PlayOneShot(writingSoundEffect);
         if (ToolSelectUpgrade.Instance != null && ToolSelectUpgrade.Instance.HasSelection)
         {
             ToolSelectUpgrade.Instance.TryApplyUpgrade();
@@ -160,6 +167,8 @@ public class WorkshopUI : MonoBehaviour
 
     public void OpenBuildMenu()
     {
+        audioSource.Stop();
+        audioSource.PlayOneShot(writingSoundEffect);
         AssignWorkerUI.Instance?.ClearSelectionUI();
 
         if (BuildMenu != null) BuildMenu.SetActive(true);
@@ -178,6 +187,8 @@ public class WorkshopUI : MonoBehaviour
 
     public void OpenUpgradeToolMenu()
     {
+        audioSource.Stop();
+        audioSource.PlayOneShot(writingSoundEffect);
         AssignWorkerUI.Instance?.ClearSelectionUI();
 
         if (UpgradeToolMenu != null) UpgradeToolMenu.SetActive(true);
@@ -198,6 +209,8 @@ public class WorkshopUI : MonoBehaviour
 
     public void OpenRefineMaterialMenu()
     {
+        audioSource.Stop();
+        audioSource.PlayOneShot(writingSoundEffect);
         AssignWorkerUI.Instance?.ClearSelectionUI();
 
         if (RefineMaterialMenu != null) RefineMaterialMenu.SetActive(true);
@@ -215,6 +228,8 @@ public class WorkshopUI : MonoBehaviour
 
     public void OpenAssignWorkerMenu()
     {
+        audioSource.Stop();
+        audioSource.PlayOneShot(writingSoundEffect);
         if (AssignWorkerMenu != null)
             AssignWorkerMenu.SetActive(true);
 

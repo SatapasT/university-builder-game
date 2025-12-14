@@ -34,7 +34,7 @@ public class BuildProgressTracker : MonoBehaviour
         if (type == BuildType.None)
             return BuildState.NotBuilt;
 
-        return states.TryGetValue(type, out var s) ? s : BuildState.NotBuilt;
+        return states.TryGetValue(type, out var state) ? state : BuildState.NotBuilt;
     }
 
     public bool IsBuilt(BuildType type) => GetState(type) == BuildState.Built;

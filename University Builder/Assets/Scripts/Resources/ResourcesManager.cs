@@ -7,10 +7,10 @@ public class ResourcesManager : MonoBehaviour
 {
     public static ResourcesManager Instance { get; private set; }
 
-    [Header("Popup UI")]
+    [Header("Popup Text")]
     [SerializeField] private TextMeshProUGUI popupText;
 
-    [Header("Popup Icons (5 GameObjects)")]
+    [Header("Popup Icons")]
     [SerializeField] private GameObject woodIcon;
     [SerializeField] private GameObject stoneIcon;
     [SerializeField] private GameObject goldIcon;
@@ -60,18 +60,15 @@ public class ResourcesManager : MonoBehaviour
 
     private void ShowPopup(ResourceType type)
     {
-        // Text
         if (popupText != null)
         {
             popupText.text = $"{type}: {resources[type]}";
             popupText.gameObject.SetActive(true);
         }
 
-        // Icon
         HideAllIcons();
         GetIconObject(type)?.SetActive(true);
 
-        // Reset timer
         if (hideRoutine != null)
             StopCoroutine(hideRoutine);
 
